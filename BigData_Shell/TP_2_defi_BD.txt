@@ -1,0 +1,8 @@
+> mv Indexeur.sh.dist indexeur.sh
+> echo | grep -o "TMP" indexeur.sh
+> echo | grep -o "zorglub" indexeur.sh
+> !!
+> !echo
+> cp indexeur.sh / > /dev/null 2>&1
+[discard any error]
+

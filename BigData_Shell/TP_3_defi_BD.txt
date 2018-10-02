@@ -1,0 +1,9 @@
+$> sort texte_Shakespeare.txt | uniq > dicoShake 
+$> sort corncob_lowercase.txt | uniq > dicoCorn
+$> comm dicoShake dicoCorn > exo1
+$> cat large_Shakespeare.txt| tr -d "\r" | grep -v '^[ \t]*[XIVI]\+[ \t]*$' | tr '[:upper:]' '[:lower:]' | tr -s '[:cntrl:][:punct:][:digit:] ' '\n' | grep -v '^.$' | grep -v '^$' | sort | uniq > dicoLargeShake
+$> comm dicoLargeShake dicoCorn > exo2
+$> time sqlite3 communs.db \ 'select * from shakespeare join corncob on shakespeare.mot = corncob.mot where shakespeare.mot == corncob.mot ' > exo3
+$> time comm dicoLargeShake dicoCorn > exo2
+$> cat capteurs-20170404.csv | cut -d',' -f2 | sort | uniq > exo4
+

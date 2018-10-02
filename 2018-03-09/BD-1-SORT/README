@@ -1,0 +1,6 @@
+ce dossier contient 2 fichiers main. Celui nommé main_mauvaise_methode.c a été fait sans respect formel de toutes les consignes, mais fonctionne très bien pour différents fichiers.
+L'autre fichier, main.c, n'est pas fonctionnel et fait suite au retour que j'ai eu lors du dernier cours avant la remise du travail.
+
+Points de non fonctionnement :
+	-Je n'ai pas réussi à avoir le nombre total de couples : je n'ai pas réussi à connaître le poids total d'une ligne
+	-Lors de la fusion, la percolation ou l'indiçage se passe mal, et l'algorithme m'invente des valeurs ou m'en supprime, et ne considère pas les bon minimums dans le tas

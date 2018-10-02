@@ -1,0 +1,124 @@
+pwd -> print name of current/working directory
+cd -> change the current directory
+cd [repository] -> go to the repository [repository].
+ls -> list information about files (the current directory by default)
+mkdir [name] -> make a directory with the name [name]
+touch -> change file timestamps
+
+Exercice
+> pwd
+/home/lag
+> ls
+[return the list of the files and directories inside the current one]
+> mkdir BigData_Shell
+[create the directory BigData_Shell]
+> cd BigData_Shell
+[go inside the directory BigData_Shell]
+> touch TP_defi_BD.txt
+[create the file TP_defi_BD.txt]
+> pwd
+/home/lag/BigData_Shell
+> cd /home/lag
+[return to the directory lag]
+> dir BigData_Shell -d
+BigData_Shell
+> cd BigData_Shell
+[go to the directory BigData_Shell]
+> cat TP_defi_BD.txt
+[print the content of the file TP_defi_BD.txt]
+> cp TP_defi_BD.txt TP_defi_BD_copy.txt
+[copy TP_defi_BD.txt in TP_defi_BD_copy.txt]
+> echo "the answer" >> TP_defi_BD_copy.txt
+[write "the answer" at the end of the file TP_defi_BD_copy.txt]
+> cat TP_defi_BD_copy.txt
+[print the content of TP_defi_BD-copy.txt]
+> rm TP_defi_BD.txt
+[remove TP_defi_BD.txt]
+> mv TP_defi_BD_copy.txt TP_defi_BD.txt
+[rename the file TP_defi_BD_copy.txt to TP_defi_BD.txt]
+> find * -type f
+[print every file in /lag]
+> find | grep -r "le" /home/lag/*
+[print all the files which got "le" inside their name, in every directory and sub-directory inside /lag]
+> find /etc/* -type f -maxdepth 0
+[print every file inside /etc but not in its sub-directory]
+> find /etc/* -type d -maxdepth 0
+[print every directory inside /etc but not in its sub-directory]
+> wc -m -l -w passwd
+[print the character, newline and word counts inside the file passwd]
+
+\2309 characters found, close to 2048 which is 2^11
+
+> find /etc/* -maxdepth 0 -type f | wc -l
+[count the number of file inside /etc only, not its sub-directories]
+> find /etc/* -type f | wc -l 
+[count the number of file inside /etc and its sub-directories]
+> grep -ors "#" -v "#!" | wc -l
+[count the number of line of comment inside /etc and its sub-directory]
+> find | grep -osw "le" /home/lag/*
+[print the files with the word "le" inside my personnal directory]
+
+
+> curl https://www.gutenberg.org/files/35/35-0.txt -o time-machine.txt
+[download the file and save it under the name time-machine.txt]
+> file time-machine.txt
+time-machine.txt: UTF-8 Unicode text, with CRLF line terminators
+> grep -ni "START OF THIS" time-machine.txt
+21:***START OF THIS
+> grep -ni "END OF THIS" time-machine.txt
+3215:***END OF THIS
+> tail -n +21 time-machine.txt | head -n -3215 > time-machine.txt.new && mv time-machine.txt.new time-machine.txt
+[remove every lines but the ones between the 21st and the 3215th ones]
+> grep -o '\b\w*' time-machine.txt | sort | uniq -i > time-machine.idx
+[create the file time-machine.idx with the list of the sorted words in time-machine.txt]
+> tr -cs "[:alpha:]" "\n" < time-machine.idx > time-machine.idx
+[remove wevery character which is not a letter]
+> tr "[:upper:]"  "[:lower:]" < time-machine.idx > time-machine.idx
+[transform every upper-case letter to lower-case letter]
+> grep -o '\b\w*' time-machine.txt | sort | uniq -i > time-machine.idx
+[create the file time-machine.idx with the list of the sorted words in time-machine.txt]
+
+
+----------------------------------------------------------
+
+fichier bash
+
+----------------------------------------------------------
+
+#!/bin/bash
+read URL
+curl $URL -o textO.txt
+file textO.txt
+iconv -c -f UTF-8 -t ISO-8859-1 textO.txt > text.txt
+
+debut=$(grep -nr "START" text.txt|tr "[:alpha:]" "\n"|head -n +1|tr -cd "[:digit:]")
+fin=$( grep -nr "END" text.txt|tr "[:alpha:]" "\n"|tail -n +1|head -n +1|tr -cd "[:digit:]")
+
+title=$(grep "Title" text.txt|tr ":" "\n"|tail -n +2|tr -cd "[:alpha:]")
+author=$(grep "Author" text.txt|tr ":" "\n"|tail -n +2|tr -cd "[:alpha:]")
+
+echo $author
+echo $title
+cp 'text.txt' "$author"-"$title".txt
+
+echo $debut
+echo $fin
+
+tail -n +$debut text.txt | head -n -$fin > text.txt.new && mv text.txt.new text.txt
+
+grep -o '\b\w*' text.txt | sort | uniq -i > text.idx
+
+tr -cs "[:alpha:]" "\n" < text.idx > textA.idx
+
+tr "[:upper:]"  "[:lower:]" < textA.idx > textB.idx
+
+grep -o '\b\w*' textB.idx | sort | uniq -i > "$author"-"$title".idx
+
+rm textB.idx
+rm textA.idx
+rm textO.txt
+rm text.txt
+
+head "$author"-"$title".idx
+
+
