@@ -8,16 +8,19 @@ Created on Mon Oct 15 08:34:08 2018
 
 """Import for spliting"""
 import re
+import time
 
 index = 0
     
 def main(filePath1, filePath2) :
     """ "en.wikipedia.org/enwiki-20110405-CategoryIdGraph.txt" / "en.wikipedia.org/enwiki-20110405-CategoryIdName.txt" """
     
-    """linksList contains  """
+    """linksList contains the edges"""
+    """maxi contains the highest ID encountered"""
     linksList = []
     maxi = 0
     
+    """this methods allows us to open big file by opening it little by little if it cannot be fully load in the RAM"""
     with open(filePath1) as infile:
         for line in infile:
             
@@ -27,7 +30,11 @@ def main(filePath1, filePath2) :
             linksList.append((int(elt[0]),int(subElt[0])))
             
             maxi = max(maxi,int(elt[0]),int(subElt[0]))
-    
+            
+    """URLList contains the names of the nodes"""
+    """indexElt contains the line number"""
+    """indexList contains the number of the line of each ID in the file"""
+    """vertices contains the ID of the vertices"""    
     URLList = []
     
     indexList = [-1] * (1 + maxi)
@@ -35,7 +42,6 @@ def main(filePath1, filePath2) :
     vertices = []
     
     indexElt = 0
-            
     with open(filePath2) as infile:
         for line in infile:
             
@@ -50,14 +56,11 @@ def main(filePath1, filePath2) :
             
             indexElt += 1
     
-    print(URLList[:10])
-    
+    """adjacentList is the adjacent list"""
     adjacentList = [[] for i in range(indexElt + 1) ]
     
     for i in linksList :
         adjacentList[indexList[i[0]]].append(i[1])
-        
-    print(adjacentList[0])
 
     """Algo Tarjan"""
     
@@ -66,7 +69,6 @@ def main(filePath1, filePath2) :
     verticeOnStack = [False for i in range(indexElt + 1) ]
     
     S = []
-    
     
     def strongconnect(vertice) :
         """wait for int"""
@@ -124,6 +126,7 @@ def main(filePath1, filePath2) :
                     
     return [outputList, URLOutputList]
 
+""" Check if there are elements with same ID in two different Wikipedia sets"""
 def testSame(filePath1, filePath2) :
     
     linesFile1 = []
@@ -149,10 +152,10 @@ def testSame(filePath1, filePath2) :
         
     return False
 
-""" Check if there are elements with same ID """
 #print(testSame("en.wikipedia.org/enwiki-20110405-CategoryIdName.txt", "es.wikipedia.org/eswiki-20110420-CategoryIdName.txt"))
 
-result = main("en.wikipedia.org/enwiki-20110405-CategoryIdGraph.txt", "en.wikipedia.org/enwiki-20110405-CategoryIdName.txt")
-
-#print(result[0])
-#print(result[1])
+start_time = time.time()
+result = main("fr.wikipedia.org/frwiki-20110409-CategoryIdGraph.txt", "fr.wikipedia.org/frwiki-20110409-CategoryIdName.txt")
+print(result[1])
+print("--- number of circuits : %s --- " % len(result[1]))
+print("--- execution time : %s seconds ---" % (time.time() - start_time))
