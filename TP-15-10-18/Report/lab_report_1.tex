@@ -163,7 +163,7 @@ Pour l'algorithme de Tarjan, j'ai suivi le pseudo-code affich\'{e} sur la page W
 
 \section{R\'{e}sultats et bilan}
 
-Voici les r\'{e}sultats obtenus, avec une moyenne de temps d'ex\'{e}cution de 11 secondes :
+Voici les r\'{e}sultats obtenus, avec une moyenne de temps d'ex\'{e}cution de 10 secondes :
 \\*
 \begin{figure}[h]
 \begin{center}
@@ -172,6 +172,6 @@ Voici les r\'{e}sultats obtenus, avec une moyenne de temps d'ex\'{e}cution de 11
 \end{center}
 \end{figure}
 ~\\*
-En \'{e}tudiant les r\'{e}sultats, on se rend compte qu'il y a bien des circuits, qui sont au nombre de 6138 pour le Wikip\'{e}dia anglais, et on note bien les liens \textit{humains} qu'il existe entre les diff\'{e}rentes pages d'un m\^{e}me circuit. Par exemple les \'{e}l\'{e}ments \textit{Meals}, \textit{Foods} et \textit{Desserts} font partie d'un m\^{e}me circuit, tout comme \textit{Chess\_ biographies} et \textit{Chess\_ players}. Les r\'{e}sultats semblent donc coh\'{e}rents. Par ailleurs, le temps d'ex\'{e}cution semble tr\`{e}s faible au vu de la taille des donn\'{e}es, ce qui est un avantage ind\'{e}niable. En particulier parce qu'aucune autre m\'{e}thode d'acc\'{e}l\'{e}ration n'a \'{e}t\'{e} utilis\'{e}e : GPU, multi-CPU ou autre. N\'{e}anmoins, cette dur\'{e}e d'ex\'{e}cution assez faible est obtenue au d\'{e}triment d'un important espace m\'{e}moire occup\'{e}. En effet, dans le fichier \textit{indexList}, une partie de la liste est inutilis\'{e}e puisqu'il existe moins d'\'{e}l\'{e}ments que le plus grand ID. Ainsi, une piste d'am\'{e}lioration serait de r\'{e}duire cet espace m\'{e}moire occup\'{e}, tout en contenant la dur\'{e}e d'ex\'{e}cution totale.
+En \'{e}tudiant les r\'{e}sultats, on se rend compte qu'il y a bien des circuits, qui sont au nombre de 378 pour le Wikip\'{e}dia anglais, et on note bien les liens \textit{humains} qu'il existe entre les diff\'{e}rentes pages d'un m\^{e}me circuit. Par exemple les \'{e}l\'{e}ments \textit{Meals}, \textit{Foods} et \textit{Desserts} font partie d'un m\^{e}me circuit, tout comme \textit{Chess\_ biographies} et \textit{Chess\_ players}. Les r\'{e}sultats semblent donc coh\'{e}rents. Par ailleurs, le temps d'ex\'{e}cution semble tr\`{e}s faible au vu de la taille des donn\'{e}es, ce qui est un avantage ind\'{e}niable. En particulier parce qu'aucune autre m\'{e}thode d'acc\'{e}l\'{e}ration n'a \'{e}t\'{e} utilis\'{e}e : GPU, multi-CPU ou autre. N\'{e}anmoins, cette dur\'{e}e d'ex\'{e}cution assez faible est obtenue au d\'{e}triment d'un important espace m\'{e}moire occup\'{e}. En effet, dans le fichier \textit{indexList}, une partie de la liste est inutilis\'{e}e puisqu'il existe moins d'\'{e}l\'{e}ments que le plus grand ID. Ainsi, une piste d'am\'{e}lioration serait de r\'{e}duire cet espace m\'{e}moire occup\'{e}, tout en contenant la dur\'{e}e d'ex\'{e}cution totale.
 
 \end{document}

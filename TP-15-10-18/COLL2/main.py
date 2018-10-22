@@ -23,8 +23,8 @@ def main(filePath1, filePath2) :
     """this methods allows us to open big file by opening it little by little if it cannot be fully load in the RAM"""
     with open(filePath1) as infile:
         for line in infile:
-            
-            elt = re.split(r'\t+', line.rstrip('\t'))
+                        
+            elt = re.split(r'\t+', line.rstrip('\t'))   
             subElt = re.split(r'\n+', elt[1].rstrip('\n'))
             
             linksList.append((int(elt[0]),int(subElt[0])))
@@ -57,16 +57,19 @@ def main(filePath1, filePath2) :
             indexElt += 1
     
     """adjacentList is the adjacent list"""
-    adjacentList = [[] for i in range(indexElt + 1) ]
+    adjacentList = [[] for i in range(indexElt) ]
     
     for i in linksList :
         adjacentList[indexList[i[0]]].append(i[1])
+        
+        
+    print("--- files loaded : %s seconds ---" % (time.time() - start_time))
 
     """Algo Tarjan"""
     
-    verticeIndex = [-1 for i in range(indexElt + 1) ]
-    verticeLowLink = [-1 for i in range(indexElt + 1) ]
-    verticeOnStack = [False for i in range(indexElt + 1) ]
+    verticeIndex = [-1 for i in range(indexElt) ]
+    verticeLowLink = [-1 for i in range(indexElt) ]
+    verticeOnStack = [False for i in range(indexElt) ]
     
     S = []
     
@@ -94,6 +97,7 @@ def main(filePath1, filePath2) :
             tempNeighbour = indexList[i]
             if (verticeIndex[tempNeighbour] == -1):
                 strongconnect(i)
+                verticeLowLink[tempIndex] = min(verticeLowLink[tempIndex], verticeLowLink[tempNeighbour])
             elif (verticeOnStack[tempNeighbour]) :
                 """Successor w is in stack S and hence in the current SCC
                 If w is not on stack, then (v, w) is a cross-edge in the DFS tree and must be ignored
@@ -103,13 +107,17 @@ def main(filePath1, filePath2) :
         
         if (verticeLowLink[tempIndex] == verticeIndex[tempIndex]) :
             w = S.pop()
-            verticeLowLink[indexList[w]]
+            verticeOnStack[indexList[w]] = False
             output.append(w)
             while (vertice != w) :
                 w = S.pop()
-                verticeLowLink[indexList[w]]
+                verticeOnStack[indexList[w]] = False
                 output.append(w)
-            return output
+            if(len(output) > 1) :
+                outputList.append(output)
+                URLOutputList.append([])
+                for elt in output:
+                    URLOutputList[-1].append(URLList[indexList[elt]])
                 
     outputList = []
                 
@@ -117,13 +125,8 @@ def main(filePath1, filePath2) :
     
     for vertice in vertices :
         if (verticeIndex[indexList[vertice]] == -1) :
-            temp = strongconnect(vertice)
-            if(temp):
-                outputList.append(temp)
-                URLOutputList.append([])
-                for elt in temp:
-                    URLOutputList[-1].append(URLList[indexList[elt]])
-                    
+            strongconnect(vertice)
+    
     return [outputList, URLOutputList]
 
 """ Check if there are elements with same ID in two different Wikipedia sets"""
@@ -155,7 +158,8 @@ def testSame(filePath1, filePath2) :
 #print(testSame("en.wikipedia.org/enwiki-20110405-CategoryIdName.txt", "es.wikipedia.org/eswiki-20110420-CategoryIdName.txt"))
 
 start_time = time.time()
-result = main("fr.wikipedia.org/frwiki-20110409-CategoryIdGraph.txt", "fr.wikipedia.org/frwiki-20110409-CategoryIdName.txt")
-print(result[1])
+result = main("en.wikipedia.org/enwiki-20110405-CategoryIdGraph.txt", "en.wikipedia.org/enwiki-20110405-CategoryIdName.txt")
+#result = main("test/graph_test.txt", "test/name_test.txt")
+#print(result[1])
 print("--- number of circuits : %s --- " % len(result[1]))
-print("--- execution time : %s seconds ---" % (time.time() - start_time))
+print("--- total execution time : %s seconds ---" % (time.time() - start_time))
