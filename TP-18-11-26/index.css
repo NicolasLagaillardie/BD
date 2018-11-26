@@ -1,0 +1,20 @@
+.light {
+    background-size: 30px 30px;
+    height: 34px;
+    width: 34px;
+}
+
+.lightOn {
+    composes: light;
+     background-image: url("media/light_bulb_on.png");
+}
+
+.lightOff {
+    composes: light;
+     background-image: url("media/light_bulb_off.png");
+}
+
+a {
+    text-decoration: none;
+    margin-right: 5px;
+}
