@@ -74,22 +74,9 @@ function createLight(lien) {
     });
 
     // Level
-    const level = document.createElement("button");
+    const level = document.createElement("span");
+    level.style.opacity = toString(Math.max(255, 50 + lien.level));
     level.appendChild(document.createTextNode(lien.level));
-
-    level.addEventListener("click", function () {
-        cleanElement(tableau);
-        tableau.appendChild(modifyTable("Light"));
-        ajaxGet(getLights, function (reponse) {
-            var reponseLien = JSON.parse(reponse);
-            reponseLien.forEach(function (thisLien) {
-                if (thisLien.level == lien.level) {
-                    var lienElt = createLight(thisLien);
-                    tableau.appendChild(lienElt);
-                }
-            });
-        });
-    });
 
     // Switch light
     //button
@@ -300,6 +287,78 @@ function createBuilding(lien) {
     const name = document.createElement("span");
     name.appendChild(document.createTextNode(lien.name));
 
+
+
+
+
+
+
+    // Switch light
+    //button
+    const switchLightBuilding = document.createElement("button");
+    switchLightBuilding.id = "switchLightBuilding" + lien.id;
+
+    //CSS
+    const switchLightBuildingPicture = document.createElement("img");
+
+    //Check if all the lights are on
+    var isLightOn = false;
+    switchLightBuildingPicture.src = "media/light_switch_off.png";
+
+    switchLightBuilding.addEventListener("click", function () {
+        isLightOn = !isLightOn;
+
+        ajaxGet(getRooms, function (reponseRoom) {
+            const reponseRoomLien = JSON.parse(reponseRoom);
+            reponseRoomLien.forEach(function (thisRoom) {
+                if (thisRoom.buildingId == lien.id) {
+                    ajaxGet(getLights, function (reponseLight) {
+                        const reponseLightLien = JSON.parse(reponseLight);
+                        reponseLightLien.forEach(function (thisLight) {
+                            if (thisRoom.id == thisLight.roomId) {
+
+                                thisLight.status = isLightOn ? "ON" : "OFF";
+
+                                ajaxPost(getLights, thisLight, function (reponse) {
+
+                                }, true);
+
+                                switchLightBuildingPicture.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+    ajaxGet(getRooms, function (reponseRoom) {
+        const reponseRoomLien = JSON.parse(reponseRoom);
+        reponseRoomLien.forEach(function (thisRoom) {
+            if (thisRoom.buildingId == lien.id) {
+                ajaxGet(getLights, function (reponseLight) {
+                    const reponseLightLien = JSON.parse(reponseLight);
+                    reponseLightLien.forEach(function (thisLight) {
+                        if (thisLight.roomId == thisRoom.id) {
+                            if (thisLight.status == "ON") {
+                                isLightOn = true;
+                                switchLightBuildingPicture.src = "media/light_switch_on.png";
+                                return;
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    });
+
+
+
+
+
+
+
+
     // Delete building
     //button
     const deleteBuilding = document.createElement("button");
@@ -317,18 +376,22 @@ function createBuilding(lien) {
 
     const cellId = document.createElement("td");
     const cellName = document.createElement("td");
+    const cellSwitchLight = document.createElement("td");
     const cellDeleteBuilding = document.createElement("td");
 
+    switchLightBuilding.appendChild(switchLightBuildingPicture);
     deleteBuilding.appendChild(deleteBuildingPicture);
 
     cellId.appendChild(idBuilding);
     cellName.appendChild(name);
+    cellSwitchLight.appendChild(switchLightBuilding);
     cellDeleteBuilding.appendChild(deleteBuilding);
 
     // add the cells to the line
     const line = document.createElement("tr");
     line.appendChild(cellId);
     line.appendChild(cellName);
+    line.appendChild(cellSwitchLight);
     line.appendChild(cellDeleteBuilding);
 
     return line;
@@ -364,8 +427,8 @@ function addItem(type) {
         });
 
         const level = document.createElement("input");
-        level.type = "text";
-        level.value = "Level";
+        level.type = "number";
+        level.value = "0";
         level.required = true;
 
         const status = document.createElement("select");
@@ -397,7 +460,7 @@ function addItem(type) {
                 tableau.appendChild(lienElt);
 
                 cleanElement(formAddItem);
-                
+
                 formAddItem.removeEventListener("submit", addLight);
 
             }, true);
@@ -453,7 +516,7 @@ function addItem(type) {
                 tableau.appendChild(lienElt);
 
                 cleanElement(formAddItem);
-                
+
                 formAddItem.removeEventListener("submit", addRoom);
 
             }, true);
@@ -487,7 +550,7 @@ function addItem(type) {
                 tableau.appendChild(lienElt);
 
                 cleanElement(formAddItem);
-                
+
                 formAddItem.removeEventListener("submit", addBuilding);
 
             }, true);
@@ -503,31 +566,6 @@ function cleanElement(element) {
         element.removeChild(element.firstChild);
     }
 }
-
-Vue.component('todo-item', {
-    props: ['todo'],
-    template: '<li>{{ todo.text }}</li>'
-})
-
-var app7 = new Vue({
-    el: '#app-7',
-    data: {
-        groceryList: [
-            {
-                id: 0,
-                text: 'Vegetables'
-            },
-            {
-                id: 1,
-                text: 'Cheese'
-            },
-            {
-                id: 2,
-                text: 'Whatever else humans are supposed to eat'
-            }
-    ]
-    }
-})
 
 const tableau = document.getElementById("tableau");
 const lightsButton = document.getElementById("lightsButton");
@@ -578,3 +616,36 @@ buildingsButton.addEventListener("click", function () {
         });
     });
 });
+
+
+
+
+
+
+
+
+
+Vue.component('todo-item', {
+    props: ['todo'],
+    template: '<li>{{ todo.text }}</li>'
+})
+
+var app7 = new Vue({
+    el: '#app-7',
+    data: {
+        groceryList: [
+            {
+                id: 0,
+                text: 'Vegetables'
+            },
+            {
+                id: 1,
+                text: 'Cheese'
+            },
+            {
+                id: 2,
+                text: 'Whatever else humans are supposed to eat'
+            }
+    ]
+    }
+})
