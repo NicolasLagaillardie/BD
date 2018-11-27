@@ -107,24 +107,44 @@ function createLight(lien) {
         }, true);
     });
 
+    // Delete light
+    //button
+    const deleteLight = document.createElement("button");
+    deleteLight.id = "deleteLight" + lien.id;
+
+    //CSS
+    const deleteLightPicture = document.createElement("img");
+    deleteLightPicture.src = "media/delete.png";
+
+    deleteLight.addEventListener("click", function () {
+        ajaxDelete(getLights + lien.id, function (reponse) {
+            tableau.removeChild(line);
+        }, true);
+    });
+
     const cellId = document.createElement("td");
     const cellRoomId = document.createElement("td");
     const cellLevel = document.createElement("td");
     const cellSwitchLight = document.createElement("td");
+    const cellDeleteLight = document.createElement("td");
 
     switchLight.appendChild(switchLightPitcure);
+    deleteLight.appendChild(deleteLightPicture);
 
     cellId.appendChild(idLight);
     cellRoomId.appendChild(idRoom);
     cellLevel.appendChild(level);
     cellSwitchLight.appendChild(switchLight);
+    cellDeleteLight.appendChild(deleteLight);
 
     // add the cells to the line
     const line = document.createElement("tr");
+
     line.appendChild(cellId);
     line.appendChild(cellRoomId);
     line.appendChild(cellLevel);
     line.appendChild(cellSwitchLight);
+    line.appendChild(cellDeleteLight);
 
     return line;
 }
@@ -225,19 +245,37 @@ function createRoom(lien) {
         switchLightRoomPitcure.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
     });
 
+    // Delete room
+    //button
+    const deleteRoom = document.createElement("button");
+    deleteRoom.id = "deleteRoom" + lien.id;
+
+    //CSS
+    const deleteRoomPicture = document.createElement("img");
+    deleteRoomPicture.src = "media/delete.png";
+
+    deleteRoom.addEventListener("click", function () {
+        ajaxDelete(getRooms + lien.id, function (reponse) {
+            tableau.removeChild(line);
+        }, true);
+    });
+
     switchLightRoom.appendChild(switchLightRoomPitcure);
+    deleteRoom.appendChild(deleteRoomPicture);
 
     const cellId = document.createElement("td");
     const cellFloor = document.createElement("td");
     const cellName = document.createElement("td");
     const cellBuildingId = document.createElement("td");
     const cellSwitchLight = document.createElement("td");
+    const cellDeleteRoom = document.createElement("td");
 
     cellId.appendChild(idRoom);
     cellFloor.appendChild(floor);
     cellName.appendChild(name);
     cellBuildingId.appendChild(idBuilding);
     cellSwitchLight.appendChild(switchLightRoom);
+    cellDeleteRoom.appendChild(deleteRoom);
 
     // add the cells to the line
     const line = document.createElement("tr");
@@ -246,6 +284,7 @@ function createRoom(lien) {
     line.appendChild(cellFloor);
     line.appendChild(cellBuildingId);
     line.appendChild(cellSwitchLight);
+    line.appendChild(cellDeleteRoom);
 
     return line;
 }
@@ -261,16 +300,36 @@ function createBuilding(lien) {
     const name = document.createElement("span");
     name.appendChild(document.createTextNode(lien.name));
 
+    // Delete building
+    //button
+    const deleteBuilding = document.createElement("button");
+    deleteBuilding.id = "deleteBuilding" + lien.id;
+
+    //CSS
+    const deleteBuildingPicture = document.createElement("img");
+    deleteBuildingPicture.src = "media/delete.png";
+
+    deleteBuilding.addEventListener("click", function () {
+        ajaxDelete(getBuildings + lien.id, function (reponse) {
+            tableau.removeChild(line);
+        }, true);
+    });
+
     const cellId = document.createElement("td");
     const cellName = document.createElement("td");
+    const cellDeleteBuilding = document.createElement("td");
+
+    deleteBuilding.appendChild(deleteBuildingPicture);
 
     cellId.appendChild(idBuilding);
     cellName.appendChild(name);
+    cellDeleteBuilding.appendChild(deleteBuilding);
 
     // add the cells to the line
     const line = document.createElement("tr");
     line.appendChild(cellId);
     line.appendChild(cellName);
+    line.appendChild(cellDeleteBuilding);
 
     return line;
 }
@@ -305,7 +364,7 @@ function addItem(type) {
         });
 
         const level = document.createElement("input");
-        level.type = "text"
+        level.type = "text";
         level.value = "Level";
         level.required = true;
 
@@ -325,7 +384,7 @@ function addItem(type) {
         formAddItem.appendChild(status);
         formAddItem.appendChild(submit);
 
-        formAddItem.addEventListener("submit", function (e) {
+        function addLight(e) {
             e.preventDefault();
 
             ajaxPost(getLights, {
@@ -338,15 +397,19 @@ function addItem(type) {
                 tableau.appendChild(lienElt);
 
                 cleanElement(formAddItem);
+                
+                formAddItem.removeEventListener("submit", addLight);
 
             }, true);
 
-        });
+        }
+
+        formAddItem.addEventListener("submit", addLight);
 
     } else if (type == "Add room") {
 
         const name = document.createElement("input");
-        name.type = "text"
+        name.type = "text";
         name.value = "Name";
         name.required = true;
 
@@ -377,7 +440,7 @@ function addItem(type) {
         formAddItem.appendChild(buildingId);
         formAddItem.appendChild(submit);
 
-        formAddItem.addEventListener("submit", function (e) {
+        function addRoom(e) {
             e.preventDefault();
 
             ajaxPost(getRooms, {
@@ -390,15 +453,19 @@ function addItem(type) {
                 tableau.appendChild(lienElt);
 
                 cleanElement(formAddItem);
+                
+                formAddItem.removeEventListener("submit", addRoom);
 
             }, true);
 
-        });
+        }
+
+        formAddItem.addEventListener("submit", addRoom);
 
     } else if (type == "Add building") {
 
         const name = document.createElement("input");
-        name.type = "text"
+        name.type = "text";
         name.value = "Name";
         name.required = true;
 
@@ -408,7 +475,8 @@ function addItem(type) {
         formAddItem.appendChild(name);
         formAddItem.appendChild(submit);
 
-        formAddItem.addEventListener("submit", function (e) {
+        function addBuilding(e) {
+
             e.preventDefault();
 
             ajaxPost(getBuildings, {
@@ -419,10 +487,14 @@ function addItem(type) {
                 tableau.appendChild(lienElt);
 
                 cleanElement(formAddItem);
+                
+                formAddItem.removeEventListener("submit", addBuilding);
 
             }, true);
 
-        });
+        }
+
+        formAddItem.addEventListener("submit", addBuilding);
     }
 }
 
