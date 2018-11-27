@@ -1,6 +1,6 @@
-const getLights = "https://faircorp.cleverapps.io/api/lights/";
-const getRooms = "https://faircorp.cleverapps.io/api/rooms/";
-const getBuildings = "https://faircorp.cleverapps.io/api/buildings/";
+const getLights = "https://faircorp-paul-breugnot.cleverapps.io/api/lights/";
+const getRooms = "https://faircorp-paul-breugnot.cleverapps.io/api/rooms/";
+const getBuildings = "https://faircorp-paul-breugnot.cleverapps.io/api/buildings/";
 
 //https://faircorp-paul-breugnot.cleverapps.io/api/lights/-1/switch
 
@@ -11,27 +11,33 @@ function modifyTable(type) {
     const cellLevel = document.createElement("td");
     const cellSwitchLight = document.createElement("td");
     const cellName = document.createElement("td");
+    const cellDelete = document.createElement("td");
 
     cellId.innerHTML = "Id";
     cellParentId.innerHTML = type == "Light" ? "Room Id" : type == "Room" ? "Building Id" : "";
     cellLevel.innerHTML = type == "Light" ? "Level" : "Floor";
     cellSwitchLight.innerHTML = "Status";
     cellName.innerHTML = "Name";
+    cellDelete.innerHTML = "Delete";
 
     // add the cells to the line
-    var line = document.createElement("tr");
+    const line = document.createElement("tr");
     line.appendChild(cellId);
 
     if (type == "Light") {
         line.appendChild(cellParentId);
         line.appendChild(cellLevel);
         line.appendChild(cellSwitchLight);
+        line.appendChild(cellDelete);
     } else if (type == "Room") {
         line.appendChild(cellName);
         line.appendChild(cellLevel);
         line.appendChild(cellParentId);
+        line.appendChild(cellSwitchLight);
+        line.appendChild(cellDelete);
     } else {
         line.appendChild(cellName);
+        line.appendChild(cellDelete);
     }
 
     return line;
@@ -114,7 +120,7 @@ function createLight(lien) {
     cellSwitchLight.appendChild(switchLight);
 
     // add the cells to the line
-    var line = document.createElement("tr");
+    const line = document.createElement("tr");
     line.appendChild(cellId);
     line.appendChild(cellRoomId);
     line.appendChild(cellLevel);
@@ -175,22 +181,71 @@ function createRoom(lien) {
         });
     });
 
+    // Switch light
+    //button
+    const switchLightRoom = document.createElement("button");
+    switchLightRoom.id = "switchLightRoom" + lien.id;
+
+    //CSS
+    const switchLightRoomPitcure = document.createElement("img");
+
+    //Check if all the lights are on
+    var isLightOn = false;
+
+    switchLightRoom.addEventListener("click", function () {
+        isLightOn = !isLightOn;
+
+        ajaxGet(getLights, function (reponse) {
+            const reponseLien = JSON.parse(reponse);
+            reponseLien.forEach(function (thisLien) {
+                if (thisLien.roomId == lien.id) {
+
+                    thisLien.status = isLightOn ? "ON" : "OFF";
+
+                    ajaxPost(getLights, thisLien, function (reponse) {
+
+                    }, true);
+
+                    switchLightRoomPitcure.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
+                }
+            });
+        });
+    });
+
+    ajaxGet(getLights, function (reponse) {
+        const reponseLien = JSON.parse(reponse);
+        reponseLien.forEach(function (thisLien) {
+            if (thisLien.roomId == lien.id) {
+                if (thisLien.status == "ON") {
+                    isLightOn = true;
+                    return;
+                }
+            }
+        });
+        switchLightRoomPitcure.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
+    });
+
+    switchLightRoom.appendChild(switchLightRoomPitcure);
+
     const cellId = document.createElement("td");
     const cellFloor = document.createElement("td");
     const cellName = document.createElement("td");
     const cellBuildingId = document.createElement("td");
+    const cellSwitchLight = document.createElement("td");
 
     cellId.appendChild(idRoom);
     cellFloor.appendChild(floor);
     cellName.appendChild(name);
     cellBuildingId.appendChild(idBuilding);
+    cellSwitchLight.appendChild(switchLightRoom);
 
     // add the cells to the line
-    var line = document.createElement("tr");
+    const line = document.createElement("tr");
     line.appendChild(cellId);
     line.appendChild(cellName);
     line.appendChild(cellFloor);
     line.appendChild(cellBuildingId);
+    line.appendChild(cellSwitchLight);
 
     return line;
 }
@@ -273,15 +328,18 @@ function addItem(type) {
         formAddItem.addEventListener("submit", function (e) {
             e.preventDefault();
 
-            ajaxPut(getLights, {
+            ajaxPost(getLights, {
                 level: level.value,
                 status: status.value,
                 roomId: roomId.value
             }, function (reponse) {
-                console.log(reponse);
-            }, true);
 
-            cleanElement(formAddItem);
+                const lienElt = createLight(JSON.parse(reponse));
+                tableau.appendChild(lienElt);
+
+                cleanElement(formAddItem);
+
+            }, true);
 
         });
 
@@ -322,19 +380,22 @@ function addItem(type) {
         formAddItem.addEventListener("submit", function (e) {
             e.preventDefault();
 
-            ajaxPut(getRooms, {
+            ajaxPost(getRooms, {
                 name: name.value,
                 floor: floor.value,
                 buildingId: buildingId.value
             }, function (reponse) {
-                console.log(reponse);
-            }, true);
 
-            cleanElement(formAddItem);
+                const lienElt = createRoom(JSON.parse(reponse));
+                tableau.appendChild(lienElt);
+
+                cleanElement(formAddItem);
+
+            }, true);
 
         });
 
-    } else {
+    } else if (type == "Add building") {
 
         const name = document.createElement("input");
         name.type = "text"
@@ -350,13 +411,16 @@ function addItem(type) {
         formAddItem.addEventListener("submit", function (e) {
             e.preventDefault();
 
-            ajaxPut(getBuildings, {
+            ajaxPost(getBuildings, {
                 name: name.value
             }, function (reponse) {
-                console.log(reponse);
-            }, true);
 
-            cleanElement(formAddItem);
+                const lienElt = createBuilding(JSON.parse(reponse));
+                tableau.appendChild(lienElt);
+
+                cleanElement(formAddItem);
+
+            }, true);
 
         });
     }
@@ -368,28 +432,30 @@ function cleanElement(element) {
     }
 }
 
+Vue.component('todo-item', {
+    props: ['todo'],
+    template: '<li>{{ todo.text }}</li>'
+})
 
-
-var app4 = new Vue({
-    el: '#app-4',
+var app7 = new Vue({
+    el: '#app-7',
     data: {
-        todos: [
+        groceryList: [
             {
-                text: 'Learn JavaScript'
+                id: 0,
+                text: 'Vegetables'
             },
             {
-                text: 'Learn Vue'
+                id: 1,
+                text: 'Cheese'
             },
             {
-                text: 'Build something awesome'
+                id: 2,
+                text: 'Whatever else humans are supposed to eat'
             }
     ]
     }
 })
-
-
-
-
 
 const tableau = document.getElementById("tableau");
 const lightsButton = document.getElementById("lightsButton");
@@ -404,9 +470,9 @@ lightsButton.addEventListener("click", function () {
     tableau.appendChild(modifyTable("Light"));
     modifyAddButton(true, "Add light");
     ajaxGet(getLights, function (reponse) {
-        var reponseLien = JSON.parse(reponse);
+        const reponseLien = JSON.parse(reponse);
         reponseLien.forEach(function (lien) {
-            var lienElt = createLight(lien);
+            const lienElt = createLight(lien);
             tableau.appendChild(lienElt);
         });
     });
@@ -418,9 +484,9 @@ roomsButton.addEventListener("click", function () {
     tableau.appendChild(modifyTable("Room"));
     modifyAddButton(true, "Add room");
     ajaxGet(getRooms, function (reponse) {
-        var reponseLien = JSON.parse(reponse);
+        const reponseLien = JSON.parse(reponse);
         reponseLien.forEach(function (lien) {
-            var lienElt = createRoom(lien);
+            const lienElt = createRoom(lien);
             tableau.appendChild(lienElt);
         });
     });
@@ -433,9 +499,9 @@ buildingsButton.addEventListener("click", function () {
     tableau.appendChild(modifyTable("Building"));
     modifyAddButton(true, "Add building");
     ajaxGet(getBuildings, function (reponse) {
-        var reponseLien = JSON.parse(reponse);
+        const reponseLien = JSON.parse(reponse);
         reponseLien.forEach(function (lien) {
-            var lienElt = createBuilding(lien);
+            const lienElt = createBuilding(lien);
             tableau.appendChild(lienElt);
         });
     });
