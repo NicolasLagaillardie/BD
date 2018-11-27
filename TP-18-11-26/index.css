@@ -13,6 +13,7 @@ header {
     border-top: 0;
     border-left: 0;
     border-right: 0;
+    padding: 10px;
 }
 
 button {
@@ -59,6 +60,7 @@ table tr td:last-child {
     border-right: 0;
 }
 
-span {
-    margin: 5px;
+td {
+    padding: 5px;
+    min-width: 5em; 
 }

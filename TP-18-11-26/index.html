@@ -20,13 +20,39 @@
         <h2><span id="title"></span></h2>
 
         <div>
+            <button id="addButton" style="display: none"></button>
+        </div>
+
+        <br>
+
+        <div>
+            <form id="formAddItem">
+            </form>
+        </div>
+
+        <br>
+
+        <div>
             <table id="tableau">
             </table>
+        </div>
+        
+        
+        <hr>
+        
+        <span>Tests Vue.js</span>
+
+        <div id="app-4">
+            <ol>
+                <li v-for="todo in todos">
+                    {{ todo.text }}
+                </li>
+            </ol>
         </div>
 
     </center>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="ajax.js"></script>
     <script src="index.js"></script>
 </body>
