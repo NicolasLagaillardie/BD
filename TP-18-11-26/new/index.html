@@ -35,30 +35,8 @@
 
         <br>
 
-        <div>
-            <table id="tableau">
-            </table>
-        </div>
-
-
-
-
-
-
-        <hr>
-
-        <span>Tests Vue.js</span>
-
-        <div id="app">
-            <h1>Test</h1>
-
-            <button v-on:click="test('Coco')">Push</button>
-        </div>
-
-
-
         <!-- Lights -->
-        <div id="lights" style="display:none">
+        <div id="lights" v-if="seen">
             <table>
                 <tr>
                     <th>
@@ -96,9 +74,9 @@
                 </tr>
             </table>
         </div>
-        
+
         <!-- Rooms -->
-        <div id="rooms" style="display:none">
+        <div id="rooms" v-if="seen">
             <table>
                 <tr>
                     <th>
@@ -137,14 +115,14 @@
                         <button v-on:click="switchLight(room)"><img v-bind:src="changePicture(room)"></button>
                     </td>
                     <td>
-                        <button v-on:click="deleteLight(light)"><img src="media/delete.png"></button>
+                        <button v-on:click="deleteRoom(room)"><img src="media/delete.png"></button>
                     </td>
                 </tr>
             </table>
         </div>
-        
+
         <!-- Buildings -->
-        <div id="buildings" style="display:none">
+        <div id="buildings" v-if="seen">
             <table>
                 <tr>
                     <th>
@@ -168,10 +146,10 @@
                         {{building.name}}
                     </td>
                     <td>
-                        <button v-on:click="switchLight(light)"><img v-bind:src="changePicture(light)"></button>
+                        <button v-on:click="switchLight(building)"><img v-bind:src="changePicture(building)"></button>
                     </td>
                     <td>
-                        <button v-on:click="deleteLight(light)"><img src="media/delete.png"></button>
+                        <button v-on:click="deleteBuilding(building)"><img src="media/delete.png"></button>
                     </td>
                 </tr>
             </table>
