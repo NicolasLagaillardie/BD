@@ -1,21 +1,24 @@
-const getLights = "https://faircorp-paul-breugnot.cleverapps.io/api/lights/";
-const getRooms = "https://faircorp-paul-breugnot.cleverapps.io/api/rooms/";
-const getBuildings = "https://faircorp-paul-breugnot.cleverapps.io/api/buildings/";
+const serverURL = "https://faircorp-paul-breugnot.cleverapps.io/api/";
+const getLights = serverURL + "lights/";
+const getRooms = serverURL + "rooms/";
+const getBuildings = serverURL + "buildings/";
 
 //https://faircorp-paul-breugnot.cleverapps.io/api/lights/-1/switch
 
 function modifyTable(type) {
 
-    const cellId = document.createElement("td");
-    const cellParentId = document.createElement("td");
-    const cellLevel = document.createElement("td");
-    const cellSwitchLight = document.createElement("td");
-    const cellName = document.createElement("td");
-    const cellDelete = document.createElement("td");
+    const cellId = document.createElement("th");
+    const cellParentId = document.createElement("th");
+    const cellLevel = document.createElement("th");
+    const ccellColor = document.createElement("th");
+    const cellSwitchLight = document.createElement("th");
+    const cellName = document.createElement("th");
+    const cellDelete = document.createElement("th");
 
     cellId.innerHTML = "Id";
     cellParentId.innerHTML = type == "Light" ? "Room Id" : type == "Room" ? "Building Id" : "";
     cellLevel.innerHTML = type == "Light" ? "Level" : "Floor";
+    ccellColor.innerHTML = "Color";
     cellSwitchLight.innerHTML = "Status";
     cellName.innerHTML = "Name";
     cellDelete.innerHTML = "Delete";
@@ -27,6 +30,7 @@ function modifyTable(type) {
     if (type == "Light") {
         line.appendChild(cellParentId);
         line.appendChild(cellLevel);
+        line.appendChild(ccellColor);
         line.appendChild(cellSwitchLight);
         line.appendChild(cellDelete);
     } else if (type == "Room") {
@@ -37,6 +41,7 @@ function modifyTable(type) {
         line.appendChild(cellDelete);
     } else {
         line.appendChild(cellName);
+        line.appendChild(cellSwitchLight);
         line.appendChild(cellDelete);
     }
 
@@ -75,8 +80,13 @@ function createLight(lien) {
 
     // Level
     const level = document.createElement("span");
-    level.style.opacity = toString(Math.max(255, 50 + lien.level));
+    //level.style.opacity = Math.min(255, 50 + lien.level)/255.;
     level.appendChild(document.createTextNode(lien.level));
+
+    // Level
+    const color = document.createElement("input");
+    color.type = "color";
+    //color.appendChild(document.createTextNode(lien.level));
 
     // Switch light
     //button
@@ -112,6 +122,7 @@ function createLight(lien) {
     const cellId = document.createElement("td");
     const cellRoomId = document.createElement("td");
     const cellLevel = document.createElement("td");
+    const cellColor = document.createElement("td");
     const cellSwitchLight = document.createElement("td");
     const cellDeleteLight = document.createElement("td");
 
@@ -121,6 +132,7 @@ function createLight(lien) {
     cellId.appendChild(idLight);
     cellRoomId.appendChild(idRoom);
     cellLevel.appendChild(level);
+    cellColor.appendChild(color);
     cellSwitchLight.appendChild(switchLight);
     cellDeleteLight.appendChild(deleteLight);
 
@@ -130,6 +142,7 @@ function createLight(lien) {
     line.appendChild(cellId);
     line.appendChild(cellRoomId);
     line.appendChild(cellLevel);
+    line.appendChild(cellColor);
     line.appendChild(cellSwitchLight);
     line.appendChild(cellDeleteLight);
 
@@ -198,6 +211,7 @@ function createRoom(lien) {
 
     //Check if all the lights are on
     var isLightOn = false;
+    switchLightRoomPitcure.src = "media/light_switch_off.png";
 
     switchLightRoom.addEventListener("click", function () {
         isLightOn = !isLightOn;
@@ -225,11 +239,11 @@ function createRoom(lien) {
             if (thisLien.roomId == lien.id) {
                 if (thisLien.status == "ON") {
                     isLightOn = true;
+                    switchLightRoomPitcure.src = "media/light_switch_on.png";
                     return;
                 }
             }
         });
-        switchLightRoomPitcure.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
     });
 
     // Delete room
@@ -286,12 +300,6 @@ function createBuilding(lien) {
     // Name
     const name = document.createElement("span");
     name.appendChild(document.createTextNode(lien.name));
-
-
-
-
-
-
 
     // Switch light
     //button
@@ -351,13 +359,6 @@ function createBuilding(lien) {
             }
         });
     });
-
-
-
-
-
-
-
 
     // Delete building
     //button
@@ -427,7 +428,9 @@ function addItem(type) {
         });
 
         const level = document.createElement("input");
-        level.type = "number";
+        level.type = "range";
+        level.min = "0";
+        level.max = "255";
         level.value = "0";
         level.required = true;
 
@@ -625,27 +628,112 @@ buildingsButton.addEventListener("click", function () {
 
 
 
-Vue.component('todo-item', {
-    props: ['todo'],
-    template: '<li>{{ todo.text }}</li>'
-})
+new Vue({
+    el: '#grid',
+    data() {
+        return {
+            lights: null,
+            status_light: "media/light_bulb_off.png"
+        }
+    },
+    mounted() {
+        axios
+            .get(getLights)
+            .then(response => (this.lights = response.data));
+    },
 
-var app7 = new Vue({
-    el: '#app-7',
-    data: {
-        groceryList: [
-            {
-                id: 0,
-                text: 'Vegetables'
-            },
-            {
-                id: 1,
-                text: 'Cheese'
-            },
-            {
-                id: 2,
-                text: 'Whatever else humans are supposed to eat'
-            }
-    ]
+    methods: {
+        test: function (message) {
+            console.log(message);
+        },
+        switchLight: function (light) {
+            console.log(light);
+            console.log(getLights + light.id);
+            
+            light.status = light.status == "ON" ? "OFF" : "ON";
+            
+            this.status_light = "media/light_bulb_on.png";
+            
+            axios
+                .post(getLights + light.id, JSON.parse(JSON.stringify(light)))
+                .then(response => (console.log(response)));
+        }
     }
 })
+
+
+
+
+
+
+
+
+/*
+// register the grid component
+Vue.component('demo-grid', {
+    template: '#grid-light',
+    props: {
+        data: Array,
+        columns: Array,
+        filterKey: String
+    },
+    data: function () {
+        var sortOrders = {}
+        this.columns.forEach(function (key) {
+            sortOrders[key] = 1
+        })
+        return {
+            sortKey: '',
+            sortOrders: sortOrders
+        }
+    },
+    computed: {
+        filteredData: function () {
+            var sortKey = this.sortKey
+            var filterKey = this.filterKey && this.filterKey.toLowerCase()
+            var order = this.sortOrders[sortKey] || 1
+            var data = this.data
+
+            if (filterKey) {
+                data = data.filter(function (row) {
+                    return Object.keys(row).some(function (key) {
+                        return String(row[key]).toLowerCase().indexOf(filterKey) > -1
+                    })
+                })
+            }
+            if (sortKey) {
+                data = data.slice().sort(function (a, b) {
+                    a = a[sortKey]
+                    b = b[sortKey]
+                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                })
+            }
+            return data
+        }
+    },
+    filters: {
+        capitalize: function (str) {
+            return str.charAt(0).toUpperCase() + str.slice(1)
+        }
+    },
+    methods: {
+        sortBy: function (key) {
+            this.sortKey = key
+            this.sortOrders[key] = this.sortOrders[key] * -1
+        }
+    }
+})
+
+// bootstrap the demo
+var demo = new Vue({
+    el: '#demo',
+    data: {
+        gridColumns: ['id', 'roomId', 'level', 'status','delete'],
+        gridData: null
+    },
+    mounted() {
+        axios
+            .get(getLights)
+            .then(response => (this.gridData = response.data));
+    }
+})*/

@@ -4,6 +4,9 @@
     <title>Test Ws mqtt.js</title>
     <link rel="stylesheet" type="text/css" href="index.css">
     <link rel="icon" type="image/png" href="/media/favicon.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -38,20 +41,95 @@
         </div>
 
 
+
+
+
+
         <hr>
 
         <span>Tests Vue.js</span>
 
-        <div id="app-7">
-            <ol>
-                <todo-item v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id">
-                </todo-item>
-            </ol>
+        <div id="app">
+            <h1>Test</h1>
+
+            <button v-on:click="test('Coco')">Push</button>
         </div>
 
-    </center>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+
+
+
+        <!-- component template -->
+        <script type="text/x-template" id="grid-light">
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="key in columns" @click="sortBy(key)" :class="{ active: sortKey == key }">
+                            {{ key | capitalize }}
+                            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="entry in filteredData">
+                        <td v-for="key in columns">
+                            {{entry[key]}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </script>
+
+        <!-- demo root element -->
+        <div id="demo">
+            <demo-grid :data="gridData" :columns="gridColumns">
+            </demo-grid>
+        </div>
+
+
+
+        <!-- demo root element -->
+        <div id="grid">
+            <table>
+                <tr>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        Room ID
+                    </th>
+                    <th>
+                        Level
+                    </th>
+                    <th>
+                        Status
+                    </th>
+                </tr>
+                <tr v-for="light in lights">
+                    <td>
+                        {{light.id}}
+                    </td>
+                    <td>
+                        {{light.roomId}}
+                    </td>
+                    <td>
+                        {{light.level}}
+                    </td>
+                    <td>
+                        <button v-on:click="switchLight(light)"><img v-bind:src="status_light"></button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+
+
+
+    </center>
     <script src="ajax.js"></script>
     <script src="index.js"></script>
 </body>

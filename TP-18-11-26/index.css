@@ -2,6 +2,11 @@ html {
     font-size: 20px;
 }
 
+body {
+  font-family: Times New Roman, Architect, sans-serif;
+  color: #444;
+}
+
 div {
     display: block;
     margin-left: auto;
@@ -34,6 +39,10 @@ td {
     text-align: center;
 }
 
+tr:hover {
+    background-color: grey;
+}
+
 table {
     border-collapse: collapse;
     font-size: 20px;
@@ -62,4 +71,24 @@ table tr td:last-child {
 td {
     padding: 5px;
     min-width: 5em; 
+}
+
+input[type="range"] {
+    position: relative;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+input[type="range"]:after,
+input[type="range"]:before {
+    position: absolute;
+    top: 2em;
+    color: #aaa;
+}
+input[type="range"]:before {
+    left:0em;
+    content: attr(min);
+}
+input[type="range"]:after {
+    right: 0em;
+    content: attr(max);
 }
