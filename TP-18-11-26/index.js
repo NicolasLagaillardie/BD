@@ -577,6 +577,10 @@ const buildingsButton = document.getElementById("buildingsButton");
 const addButton = document.getElementById("addButton");
 const formAddItem = document.getElementById("formAddItem");
 
+const tableLights = document.getElementById("lights");
+const tableRooms = document.getElementById("rooms");
+const tableBuildings= document.getElementById("buildings");
+
 lightsButton.addEventListener("click", function () {
     cleanElement(tableau);
     cleanElement(formAddItem);
@@ -589,6 +593,67 @@ lightsButton.addEventListener("click", function () {
             tableau.appendChild(lienElt);
         });
     });
+
+
+
+
+
+    tableLights.style.display = "flex";
+
+    new Vue({
+        el: '#lights',
+        data() {
+            return {
+                lights: null
+            }
+        },
+        mounted() {
+            axios
+                .get(getLights)
+                .then(response => (this.lights = response.data));
+        },
+
+        methods: {
+            update: function () {
+                axios
+                    .get(getLights)
+                    .then(response => (this.lights = response.data));
+            },
+            switchLight: function (light) {
+
+                light.status = light.status == "ON" ? "OFF" : "ON";
+
+                axios
+                    .post(getLights, JSON.parse(JSON.stringify(light)));
+            },
+            changePicture: function (light) {
+                if (light.status == "ON") {
+                    return "media/light_bulb_on.png";
+                } else {
+                    return "media/light_bulb_off.png";
+                };
+            },
+            deleteLight: function (light) {
+                console.log(light);
+                console.log(getLights + light.id);
+
+                axios
+                    .delete(getLights + light.id)
+                    .then(response =>
+                        axios
+                        .get(getLights)
+                        .then(response => (this.lights = response.data)));
+            }
+        }
+    })
+
+
+
+
+
+
+
+
 });
 
 roomsButton.addEventListener("click", function () {
@@ -620,46 +685,6 @@ buildingsButton.addEventListener("click", function () {
     });
 });
 
-
-
-
-
-
-
-
-
-new Vue({
-    el: '#grid',
-    data() {
-        return {
-            lights: null,
-            status_light: "media/light_bulb_off.png"
-        }
-    },
-    mounted() {
-        axios
-            .get(getLights)
-            .then(response => (this.lights = response.data));
-    },
-
-    methods: {
-        test: function (message) {
-            console.log(message);
-        },
-        switchLight: function (light) {
-            console.log(light);
-            console.log(getLights + light.id);
-            
-            light.status = light.status == "ON" ? "OFF" : "ON";
-            
-            this.status_light = "media/light_bulb_on.png";
-            
-            axios
-                .post(getLights + light.id, JSON.parse(JSON.stringify(light)))
-                .then(response => (console.log(response)));
-        }
-    }
-})
 
 
 
