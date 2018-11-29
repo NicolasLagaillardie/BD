@@ -8,36 +8,35 @@
 
 <body>
 
-    <center>
-
-        <header>
+    <header>
+        <div class="title">
             <h1><a href="/">Project - Computer science</a> </h1>
+        </div>
+        <div class="buttonHeader">
             <button id="lightsButton">Lights</button>
             <button id="roomsButton">Rooms</button>
             <button id="buildingsButton">Buildings</button>
-        </header>
+        </div>
+    </header>
 
-        <h2><span id="title"></span></h2>
+    <center>
 
-        <div>
-            <button id="addButton" style="display: none"></button>
+        <div id="divAddButton" style="display: none" class="addButton">
+            <button id="addButton"></button>
         </div>
 
-        <br>
-
-        <div>
+        <div id="divFormAddItem" class="divFormAddItem" style="display: none">
             <form id="formAddItem">
             </form>
         </div>
 
-        <br>
-
-        <div>
+        <div class="divTable">
             <table id="tableau">
             </table>
         </div>
-        
+
     </center>
+    
     <script src="ajax.js"></script>
     <script src="index.js"></script>
 </body>

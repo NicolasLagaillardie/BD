@@ -25,6 +25,7 @@ function modifyTable(type) {
 
     // add the cells to the line
     const line = document.createElement("tr");
+    line.className = "columns";
     line.appendChild(cellId);
 
     if (type == "Light") {
@@ -80,13 +81,11 @@ function createLight(lien) {
 
     // Level
     const level = document.createElement("span");
-    //level.style.opacity = Math.min(255, 50 + lien.level)/255.;
     level.appendChild(document.createTextNode(lien.level));
 
     // Level
     const color = document.createElement("input");
     color.type = "color";
-    //color.appendChild(document.createTextNode(lien.level));
 
     // Switch light
     //button
@@ -138,6 +137,7 @@ function createLight(lien) {
 
     // add the cells to the line
     const line = document.createElement("tr");
+    line.className = "cell";
 
     line.appendChild(cellId);
     line.appendChild(cellRoomId);
@@ -157,11 +157,17 @@ function createRoom(lien) {
 
     idRoom.addEventListener("click", function () {
         cleanElement(tableau);
-        tableau.appendChild(modifyTable("Room"));
-        ajaxGet(getRooms + lien.id, function (reponse) {
-            var lien = JSON.parse(reponse);
-            var lienElt = createRoom(lien);
-            tableau.appendChild(lienElt);
+        cleanElement(formAddItem);
+        tableau.appendChild(modifyTable("Light"));
+        modifyAddButton(true, "Add light");
+        ajaxGet(getLights, function (reponse) {
+            var lights = JSON.parse(reponse);
+            lights.forEach(function (light) {
+                if (light.roomId == lien.id) {
+                    const lienElt = createLight(light);
+                    tableau.appendChild(lienElt);
+                }
+            })
         });
     });
 
@@ -280,6 +286,7 @@ function createRoom(lien) {
 
     // add the cells to the line
     const line = document.createElement("tr");
+    line.className = "cell";
     line.appendChild(cellId);
     line.appendChild(cellName);
     line.appendChild(cellFloor);
@@ -293,9 +300,24 @@ function createRoom(lien) {
 function createBuilding(lien) {
 
     // Building id
-    const idBuilding = document.createElement("a");
-    idBuilding.href = getBuildings + lien.id;
+    const idBuilding = document.createElement("button");
     idBuilding.appendChild(document.createTextNode(lien.id));
+
+    idBuilding.addEventListener("click", function () {
+        cleanElement(tableau);
+        cleanElement(formAddItem);
+        tableau.appendChild(modifyTable("Room"));
+        modifyAddButton(true, "Add room");
+        ajaxGet(getRooms, function (reponse) {
+            var rooms = JSON.parse(reponse);
+            rooms.forEach(function (room) {
+                if (room.buildingId == lien.id) {
+                    const lienElt = createRoom(room);
+                    tableau.appendChild(lienElt);
+                }
+            })
+        });
+    });
 
     // Name
     const name = document.createElement("span");
@@ -390,6 +412,7 @@ function createBuilding(lien) {
 
     // add the cells to the line
     const line = document.createElement("tr");
+    line.className = "cell";
     line.appendChild(cellId);
     line.appendChild(cellName);
     line.appendChild(cellSwitchLight);
@@ -400,8 +423,11 @@ function createBuilding(lien) {
 
 function modifyAddButton(show, type) {
     addButton.innerHTML = type;
-    addButton.style.display = show ? "flex" : "none";
+    divAddButton.style.display = show ? "block" : "none";
     addButton.addEventListener("click", function () {
+        divFormAddItem.style.display = "block";
+        divFormAddItem.style.animationName = "addItem";
+        divFormAddItem.style.animationDuration = "2s";
 
         cleanElement(formAddItem);
 
@@ -410,6 +436,8 @@ function modifyAddButton(show, type) {
 }
 
 function addItem(type) {
+
+    divAddButton.style.display = "none";
 
     if (type == "Add light") {
 
@@ -427,12 +455,17 @@ function addItem(type) {
             });
         });
 
+        // Level
         const level = document.createElement("input");
         level.type = "range";
         level.min = "0";
         level.max = "255";
         level.value = "0";
         level.required = true;
+
+        // Color
+        const color = document.createElement("input");
+        color.type = "color";
 
         const status = document.createElement("select");
         const on = document.createElement("option");
@@ -447,6 +480,7 @@ function addItem(type) {
 
         formAddItem.appendChild(roomId);
         formAddItem.appendChild(level);
+        formAddItem.appendChild(color);
         formAddItem.appendChild(status);
         formAddItem.appendChild(submit);
 
@@ -462,9 +496,11 @@ function addItem(type) {
                 const lienElt = createLight(JSON.parse(reponse));
                 tableau.appendChild(lienElt);
 
-                cleanElement(formAddItem);
-
                 formAddItem.removeEventListener("submit", addLight);
+
+                cleanElement(formAddItem);
+                divFormAddItem.style.display = "none";
+                modifyAddButton(true, type);
 
             }, true);
 
@@ -476,12 +512,12 @@ function addItem(type) {
 
         const name = document.createElement("input");
         name.type = "text";
-        name.value = "Name";
+        name.placeholder = "Name";
         name.required = true;
 
         const floor = document.createElement("input");
-        floor.type = "text"
-        floor.value = "Floor";
+        floor.type = "number"
+        floor.placeholder = "0";
         floor.required = true;
 
         const buildingId = document.createElement("select");
@@ -518,9 +554,11 @@ function addItem(type) {
                 const lienElt = createRoom(JSON.parse(reponse));
                 tableau.appendChild(lienElt);
 
-                cleanElement(formAddItem);
-
                 formAddItem.removeEventListener("submit", addRoom);
+
+                cleanElement(formAddItem);
+                divFormAddItem.style.display = "none";
+                modifyAddButton(true, type);
 
             }, true);
 
@@ -532,7 +570,7 @@ function addItem(type) {
 
         const name = document.createElement("input");
         name.type = "text";
-        name.value = "Name";
+        name.placeholder = "Name";
         name.required = true;
 
         const submit = document.createElement("input");
@@ -552,9 +590,11 @@ function addItem(type) {
                 const lienElt = createBuilding(JSON.parse(reponse));
                 tableau.appendChild(lienElt);
 
-                cleanElement(formAddItem);
-
                 formAddItem.removeEventListener("submit", addBuilding);
+
+                cleanElement(formAddItem);
+                divFormAddItem.style.display = "none";
+                modifyAddButton(true, type);
 
             }, true);
 
@@ -575,11 +615,13 @@ const lightsButton = document.getElementById("lightsButton");
 const roomsButton = document.getElementById("roomsButton");
 const buildingsButton = document.getElementById("buildingsButton");
 const addButton = document.getElementById("addButton");
+const divAddButton = document.getElementById("divAddButton");
 const formAddItem = document.getElementById("formAddItem");
+const divFormAddItem = document.getElementById("divFormAddItem");
 
 const tableLights = document.getElementById("lights");
 const tableRooms = document.getElementById("rooms");
-const tableBuildings= document.getElementById("buildings");
+const tableBuildings = document.getElementById("buildings");
 
 lightsButton.addEventListener("click", function () {
     cleanElement(tableau);

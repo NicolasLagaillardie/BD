@@ -1,10 +1,39 @@
+@keyframes slowAppearance {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slowDisappearance {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes addItem {
+    from {
+        background-color: aqua;
+    }
+    to {
+        background-color: aquamarine;
+    }
+}
+
 html {
     font-size: 20px;
 }
 
 body {
-  font-family: Times New Roman, Architect, sans-serif;
-  color: #444;
+    font-family: Times New Roman, Architect, sans-serif;
+    color: #444;
+    background-color: beige;
+    margin: 0;
 }
 
 div {
@@ -18,11 +47,49 @@ header {
     border-top: 0;
     border-left: 0;
     border-right: 0;
-    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    background-color: blue
+}
+
+.title {
+    margin: 1em;
+}
+
+.buttonHeader {
+    text-align: right;
+    margin: auto;
+}
+
+.addButton {
+    background-color: aqua;
 }
 
 button {
     font-size: 20px;
+    margin: 10px;
+    animation-name: slowAppearance;
+    animation-duration: 2s;
+}
+
+button:hover, input[type="color"] {
+    background-color: Transparent;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+button:hover {
+    overflow: hidden;
+}
+
+select,
+submit,
+input {
+    margin: 10px;
+    animation-name: slowAppearance;
+    animation-duration: 2s;
 }
 
 img {
@@ -35,17 +102,34 @@ a {
     color: black;
 }
 
-td {
-    text-align: center;
+.divFormAddItem {
+    width: 100%;
+    height: auto;
+    background-color: aquamarine;
 }
 
-tr:hover {
-    background-color: grey;
+td {
+    text-align: center;
+    animation-name: slowAppearance;
+    animation-duration: 2s;
+}
+
+.cell:hover {
+    background-color:khaki;
+}
+
+.columns {
+    background-color:darkkhaki;
+}
+
+.divTable {
+    overflow-x: auto;
 }
 
 table {
     border-collapse: collapse;
     font-size: 20px;
+    background-color: white;
 }
 
 table td {
@@ -70,7 +154,7 @@ table tr td:last-child {
 
 td {
     padding: 5px;
-    min-width: 5em; 
+    min-width: 5em;
 }
 
 input[type="range"] {
@@ -78,16 +162,19 @@ input[type="range"] {
     margin-left: 1em;
     margin-right: 1em;
 }
+
 input[type="range"]:after,
 input[type="range"]:before {
     position: absolute;
     top: 2em;
     color: #aaa;
 }
+
 input[type="range"]:before {
-    left:0em;
+    left: 0em;
     content: attr(min);
 }
+
 input[type="range"]:after {
     right: 0em;
     content: attr(max);
