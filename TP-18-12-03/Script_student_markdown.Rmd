@@ -7,7 +7,7 @@ output: html_document
 This script will provide you an introduction to non negative matrix factorisation. 
 
 ```{r}
-#install.packages('NMF')
+install.packages('NMF')
 library('NMF')
 ```
 
@@ -21,8 +21,8 @@ words<-as.matrix(words)
 
 ```{r}
 # here you have to choose how many dimensions you want to use. Why are you using these values?
-nb_words<- ???
-nb_docs<- ???
+nb_words<- 100
+nb_docs<- 200
 data<-data[(1:nb_words),(1:nb_docs)]
 ```
 
@@ -32,7 +32,7 @@ nmfAlgorithm()
 
 
 #you have to choose the method you are going to use. Some methods perform better than others. You will experiment with the factorization rank during the next step
-res=nmf(data,rank=5,nrun=10, method=list("???"), seed = 111, .options ="t")
+res=nmf(data,rank=10,nrun=10, method=list("snmf/l"), seed = 111, .options ="t")
 consensusmap(res)
 
 ```
@@ -40,50 +40,33 @@ consensusmap(res)
 ```{r}
 
 #choosing the number of latent factors
-estim.r=nmf(data,???:???,method="???", nrun=10,seed=111)
+estim.r=nmf(data,12:18,method="snmf/r", nrun=10,seed=111)
 plot(estim.r)
-options(repr.plot.width=8, repr.plot.height=5)
 consensusmap(estim.r)
 
 ```
 
 ```{r}
 
-
 #Exploitation of the factorization: clustering
-nmf.data=nmf(data,???,method="???",nrun=10,seed=111)
+nmf.data=nmf(data,4,method="snmf/r",nrun=20,seed=111)
 w=basis(nmf.data)
 h=coef(nmf.data)
 
-options(repr.plot.width=4, repr.plot.height=3)
-basismap(nmf.data,hclustfun="ward")
-options(repr.plot.width=5, repr.plot.height=3)
-coefmap(nmf.data,hclustfun="ward")
+basismap(w,hclustfun="average")
+coefmap(h,hclustfun="average")
 
 res_nmf<-predict(nmf.data,'rows')
-
-#this will print the word clusters. What do you think about this clustering? Is it good or bad? How are the clusters related to journalism data?
-for(i in (1:5)){
-  topic<-which(res_nmf==i)
-  sprintf("topic %s",i)
-  print(words[topic])
-  print("==========")
-}
+View(res_nmf)
 
 ```
 
 ```{r}
 
-#Comparison with "naive" method.
-kmeans_res<-kmeans(data,??,nstart=10)
-
-# Compare this clusters with the ones you created before. Are they better or worse? Why?
-for(i in (1:5)){
-  topic<-which(kmeans_res$cluster==i)
-  sprintf("topic %s",i)
-  print(words[topic])
-  print("==========")
+#Check results
+for (indice in 1:4){
+  print(words[which(res_nmf == indice)])
+  print("")
 }
-
 
 ```
