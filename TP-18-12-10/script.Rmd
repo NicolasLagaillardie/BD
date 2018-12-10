@@ -1,0 +1,87 @@
+---
+title: "Matrix Completion"
+author: Nicolas LAGAILLARDIE
+date: "10 december 2018"
+output: html_document
+---
+
+```{r}
+#Load/install the package 'softImpute'
+#install.package('softImpute')
+library('softImpute')
+library('compare')
+#load the dataset for training and validation
+data<-read.table('data.csv',sep=',',header = T)
+#load the test set
+dTest<-read.table('test.csv',sep=',',header = T)
+#get movies's name
+names_mv<-read.table('names.csv',sep=',',header = T)
+```
+
+```{r}
+#Analysis of the data
+```
+
+```{r}
+#separate the dataset into a train sample and a validation sample
+
+## 75% of the sample size
+smp_size <- floor(0.75 * nrow(data))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(data)), size = smp_size)
+
+dTrain<-data[train_ind,]
+dValid<-data[-train_ind,]
+```
+
+
+```{r}
+# Build the sparse matrix
+dTrainSparse=Incomplete(dTrain[,1],dTrain[,2],dTrain[,3])
+```
+
+```{r}
+#compare methods using your training and validation set
+#Decompose the matrix
+res<-softImpute(dTrainSparse,rank.max=20,type="als",lambda=10)
+#matrix completion
+recom<-impute(res,dValid[,1],dValid[,2])
+```
+
+```{r}
+#Prediction over the test set
+error <- sqrt(sum((recom - dValid[,3])**2) / length(recom))
+
+recom_output <- recom
+recom_output[recom_output>10] = 10
+recom_output[recom_output<0] = 0
+recom_output<-round(recom_output,0)
+
+write.csv(recom_output,file="myrecom.csv",row.names=F)
+```
+
+```{r}
+#movies I recommend for users 29686 22761 16132
+
+recom<-impute(res,data[,1],data[,2])
+
+recom_output <- recom
+recom_output[recom_output>10] = 10
+recom_output[recom_output<0] = 0
+recom_output<-round(recom_output,0)
+
+resultat <- data[which(recom>7),]
+resultat[which(resultat[,1] == 29686),]
+```
+
+
+
+
+
+
+
+
+
+
