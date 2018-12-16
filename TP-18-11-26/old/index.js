@@ -435,6 +435,10 @@ function modifyAddButton(show, type) {
     });
 }
 
+var isAddLightInitialized = false;
+var isAddRoomInitialized = false;
+var isAddBuildingInitialized = false;
+
 function addItem(type) {
 
     divAddButton.style.display = "none";
@@ -484,29 +488,35 @@ function addItem(type) {
         formAddItem.appendChild(status);
         formAddItem.appendChild(submit);
 
-        function addLight(e) {
-            e.preventDefault();
+        if (!isAddLightInitialized) {
 
-            ajaxPost(getLights, {
-                level: level.value,
-                status: status.value,
-                roomId: roomId.value
-            }, function (reponse) {
+            isAddLightInitialized = !isAddLightInitialized;
 
-                const lienElt = createLight(JSON.parse(reponse));
-                tableau.appendChild(lienElt);
+            function addLight(e) {
+                e.preventDefault();
 
-                formAddItem.removeEventListener("submit", addLight);
+                ajaxPost(getLights, {
+                    level: level.value,
+                    status: status.value,
+                    roomId: roomId.value
+                }, function (reponse) {
 
-                cleanElement(formAddItem);
-                divFormAddItem.style.display = "none";
-                modifyAddButton(true, type);
+                    const lienElt = createLight(JSON.parse(reponse));
+                    tableau.appendChild(lienElt);
 
-            }, true);
+                    cleanElement(formAddItem);
+                    divFormAddItem.style.display = "none";
+                    modifyAddButton(true, type);
+
+                    //formAddItem.removeEventListener("submit", addLight);
+
+                }, true);
+
+            }
+
+            formAddItem.addEventListener("submit", addLight);
 
         }
-
-        formAddItem.addEventListener("submit", addLight);
 
     } else if (type == "Add room") {
 
@@ -542,29 +552,35 @@ function addItem(type) {
         formAddItem.appendChild(buildingId);
         formAddItem.appendChild(submit);
 
-        function addRoom(e) {
-            e.preventDefault();
+        if (!isAddRoomInitialized) {
 
-            ajaxPost(getRooms, {
-                name: name.value,
-                floor: floor.value,
-                buildingId: buildingId.value
-            }, function (reponse) {
+            isAddRoomInitialized = !isAddRoomInitialized;
 
-                const lienElt = createRoom(JSON.parse(reponse));
-                tableau.appendChild(lienElt);
+            function addRoom(e) {
+                e.preventDefault();
 
-                formAddItem.removeEventListener("submit", addRoom);
+                ajaxPost(getRooms, {
+                    name: name.value,
+                    floor: floor.value,
+                    buildingId: buildingId.value
+                }, function (reponse) {
 
-                cleanElement(formAddItem);
-                divFormAddItem.style.display = "none";
-                modifyAddButton(true, type);
+                    const lienElt = createRoom(JSON.parse(reponse));
+                    tableau.appendChild(lienElt);
 
-            }, true);
+                    cleanElement(formAddItem);
+                    divFormAddItem.style.display = "none";
+                    modifyAddButton(true, type);
+
+                    //formAddItem.removeEventListener("submit", addRoom);
+
+                }, true);
+
+            }
+
+            formAddItem.addEventListener("submit", addRoom);
 
         }
-
-        formAddItem.addEventListener("submit", addRoom);
 
     } else if (type == "Add building") {
 
@@ -579,28 +595,34 @@ function addItem(type) {
         formAddItem.appendChild(name);
         formAddItem.appendChild(submit);
 
-        function addBuilding(e) {
+        if (!isAddBuildingInitialized) {
 
-            e.preventDefault();
+            isAddBuildingInitialized = !isAddBuildingInitialized;
 
-            ajaxPost(getBuildings, {
-                name: name.value
-            }, function (reponse) {
+            function addBuilding(e) {
 
-                const lienElt = createBuilding(JSON.parse(reponse));
-                tableau.appendChild(lienElt);
+                e.preventDefault();
 
-                formAddItem.removeEventListener("submit", addBuilding);
+                ajaxPost(getBuildings, {
+                    name: name.value
+                }, function (reponse) {
 
-                cleanElement(formAddItem);
-                divFormAddItem.style.display = "none";
-                modifyAddButton(true, type);
+                    const lienElt = createBuilding(JSON.parse(reponse));
+                    tableau.appendChild(lienElt);
 
-            }, true);
+                    cleanElement(formAddItem);
+                    divFormAddItem.style.display = "none";
+                    modifyAddButton(true, type);
+
+                    //formAddItem.removeEventListener("submit", addBuilding);
+
+                }, true);
+
+            }
+
+            formAddItem.addEventListener("submit", addBuilding);
 
         }
-
-        formAddItem.addEventListener("submit", addBuilding);
     }
 }
 
