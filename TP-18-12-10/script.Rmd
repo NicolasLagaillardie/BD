@@ -9,7 +9,6 @@ output: html_document
 #Load/install the package 'softImpute'
 #install.package('softImpute')
 library('softImpute')
-library('compare')
 #load the dataset for training and validation
 data<-read.table('data.csv',sep=',',header = T)
 #load the test set
@@ -52,12 +51,12 @@ recom<-impute(res,dValid[,1],dValid[,2])
 
 ```{r}
 #Prediction over the test set
-error <- sqrt(sum((recom - dValid[,3])**2) / length(recom))
+sqrt(sum((recom - dValid[,3])**2) / length(recom))
 
 recom_output <- recom
 recom_output[recom_output>10] = 10
-recom_output[recom_output<0] = 0
-recom_output<-round(recom_output,0)
+recom_output[recom_output<1] = 1
+recom_output<-round(recom_output)
 
 write.csv(recom_output,file="myrecom.csv",row.names=F)
 ```
@@ -65,15 +64,29 @@ write.csv(recom_output,file="myrecom.csv",row.names=F)
 ```{r}
 #movies I recommend for users 29686 22761 16132
 
-recom<-impute(res,data[,1],data[,2])
+#For user 29686
+dTrainSparse=Incomplete(data[,1],data[,2],data[,3])
+
+res<-softImpute(dTrainSparse,rank.max=20,type="als",lambda=10)
+
+recom<-impute(res,dTest[,1],dTest[,2])
 
 recom_output <- recom
 recom_output[recom_output>10] = 10
-recom_output[recom_output<0] = 0
-recom_output<-round(recom_output,0)
+recom_output[recom_output<1] = 1
+recom_output<-round(recom_output)
 
-resultat <- data[which(recom>7),]
-resultat[which(resultat[,1] == 29686),]
+dTest["Notes"] <- NA
+dTest[,3] <- recom
+user29686 <- dTest[which(dTest[,1] == 16132),]
+
+maxi <- max(user29686[,3])
+
+selectedRow <- user29686[which(user29686[,3] == maxi),]
+
+selectedMovie <- selectedRow[1,2]
+
+names_mv[which(selectedMovie == names_mv[,1]),]
 ```
 
 

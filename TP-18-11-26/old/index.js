@@ -3,428 +3,376 @@ const getLights = serverURL + "lights/";
 const getRooms = serverURL + "rooms/";
 const getBuildings = serverURL + "buildings/";
 
-//https://faircorp-paul-breugnot.cleverapps.io/api/lights/-1/switch
-
-function modifyTable(type) {
-
-    const cellId = document.createElement("th");
-    const cellParentId = document.createElement("th");
-    const cellLevel = document.createElement("th");
-    const ccellColor = document.createElement("th");
-    const cellSwitchLight = document.createElement("th");
-    const cellName = document.createElement("th");
-    const cellDelete = document.createElement("th");
-
-    cellId.innerHTML = "Id";
-    cellParentId.innerHTML = type == "Light" ? "Room Id" : type == "Room" ? "Building Id" : "";
-    cellLevel.innerHTML = type == "Light" ? "Level" : "Floor";
-    ccellColor.innerHTML = "Color";
-    cellSwitchLight.innerHTML = "Status";
-    cellName.innerHTML = "Name";
-    cellDelete.innerHTML = "Delete";
-
-    // add the cells to the line
-    const line = document.createElement("tr");
-    line.className = "columns";
-    line.appendChild(cellId);
-
-    if (type == "Light") {
-        line.appendChild(cellParentId);
-        line.appendChild(cellLevel);
-        line.appendChild(ccellColor);
-        line.appendChild(cellSwitchLight);
-        line.appendChild(cellDelete);
-    } else if (type == "Room") {
-        line.appendChild(cellName);
-        line.appendChild(cellLevel);
-        line.appendChild(cellParentId);
-        line.appendChild(cellSwitchLight);
-        line.appendChild(cellDelete);
-    } else {
-        line.appendChild(cellName);
-        line.appendChild(cellSwitchLight);
-        line.appendChild(cellDelete);
-    }
-
-    return line;
-}
-
 function createLight(lien) {
 
-    // Light id
-    const idLight = document.createElement("button");
-    idLight.appendChild(document.createTextNode(lien.id));
-
-    idLight.addEventListener("click", function () {
-        cleanElement(tableau);
-        tableau.appendChild(modifyTable("Light"));
-        ajaxGet(getLights + lien.id, function (reponse) {
-            var lien = JSON.parse(reponse);
-            var lienElt = createLight(lien);
-            tableau.appendChild(lienElt);
-        });
+    components.gridData.push({
+        id: lien.id,
+        roomId: lien.roomId,
+        level: lien.level,
+        hue: lien.hue,
+        saturation: lien.saturation,
+        connected: lien.connected,
+        status: "status_" + lien.id,
+        delete: "delete_" + lien.id
     });
 
-    // Room id
-    const idRoom = document.createElement("button");
-    idRoom.appendChild(document.createTextNode(lien.roomId));
+    function checkLight() {
 
-    idRoom.addEventListener("click", function () {
-        cleanElement(tableau);
-        tableau.appendChild(modifyTable("Room"));
-        ajaxGet(getRooms + lien.roomId, function (reponse) {
-            var lien = JSON.parse(reponse);
-            var lienElt = createRoom(lien);
-            tableau.appendChild(lienElt);
-        });
-    });
+        if (document.getElementById("img_delete_" + lien.id)) {
+            // Light id
+            const idLight = document.getElementById("button_id_" + lien.id);
 
-    // Level
-    const level = document.createElement("span");
-    level.appendChild(document.createTextNode(lien.level));
+            // Room id
+            const idRoom = document.getElementById("button_roomId_" + lien.id);
 
-    // Level
-    const color = document.createElement("input");
-    color.type = "color";
+            // Level
+            const spanLevel = document.getElementById("span_level_" + lien.id);
+            const level = document.createElement("input");
+            level.type = "range";
+            level.min = 0;
+            level.max = 255;
+            level.value = lien.level;
+            spanLevel.removeChild(spanLevel.firstChild);
+            spanLevel.appendChild(level);
 
-    // Switch light
-    //button
-    const switchLight = document.createElement("button");
-    switchLight.id = "switchLight" + lien.id;
+            // Hue
+            const spanHue = document.getElementById("span_hue_" + lien.id);
+            const hue = document.createElement("input");
+            hue.type = "range";
+            hue.min = 0;
+            hue.max = 1;
+            hue.step = 0.1;
+            hue.value = lien.hue;
+            spanHue.removeChild(spanHue.firstChild);
+            spanHue.appendChild(hue);
 
-    //CSS
-    const switchLightPitcure = document.createElement("img");
-    switchLightPitcure.src = lien.status == "ON" ? "media/light_bulb_on.png" : "media/light_bulb_off.png";
+            // Saturation
+            const spanSaturation = document.getElementById("span_saturation_" + lien.id);
+            const saturation = document.createElement("input");
+            saturation.type = "range";
+            saturation.min = 0;
+            saturation.max = 1;
+            saturation.step = 0.1;
+            saturation.value = lien.saturation;
+            spanSaturation.removeChild(spanSaturation.firstChild);
+            spanSaturation.appendChild(saturation);
 
-    switchLight.addEventListener("click", function () {
-        lien.status = lien.status == "ON" ? "OFF" : "ON";
-        ajaxPost(getLights, lien, function (reponse) {
+            // Connected light
+            //button
+            const connectedLight = document.getElementById("button_connected_" + lien.id);
+
+            //CSS
+            connectedLight.removeChild(connectedLight.lastChild);
+            const connectedLightPitcure = document.getElementById("img_connected_" + lien.id);
+            connectedLightPitcure.style.display = "flex";
+            connectedLightPitcure.src = lien.connected ? "media/connected.svg" : "media/disconnected.svg";
+
+            // Switch light
+            //button
+            const switchLight = document.getElementById("button_status_" + lien.id);
+
+            //CSS
+            switchLight.removeChild(switchLight.lastChild);
+            const switchLightPitcure = document.getElementById("img_status_" + lien.id);
+            switchLightPitcure.style.display = "flex";
             switchLightPitcure.src = lien.status == "ON" ? "media/light_bulb_on.png" : "media/light_bulb_off.png";
-        }, true);
-    });
 
-    // Delete light
-    //button
-    const deleteLight = document.createElement("button");
-    deleteLight.id = "deleteLight" + lien.id;
+            // Delete light
+            const deleteLight = document.getElementById("button_delete_" + lien.id);
 
-    //CSS
-    const deleteLightPicture = document.createElement("img");
-    deleteLightPicture.src = "media/delete.png";
+            deleteLight.removeChild(deleteLight.lastChild);
+            const deleteLightPicture = document.getElementById("img_delete_" + lien.id);
+            deleteLightPicture.style.display = "flex";
+            deleteLightPicture.src = "media/delete.png";
 
-    deleteLight.addEventListener("click", function () {
-        ajaxDelete(getLights + lien.id, function (reponse) {
-            tableau.removeChild(line);
-        }, true);
-    });
+            //--------------------------------------------------------------------------
+            // DOM actions
+            //--------------------------------------------------------------------------   
 
-    const cellId = document.createElement("td");
-    const cellRoomId = document.createElement("td");
-    const cellLevel = document.createElement("td");
-    const cellColor = document.createElement("td");
-    const cellSwitchLight = document.createElement("td");
-    const cellDeleteLight = document.createElement("td");
+            idLight.onclick = function () {
+                cleanElement(formAddItem);
+                modifyAddButton(true, "Add light");
 
-    switchLight.appendChild(switchLightPitcure);
-    deleteLight.appendChild(deleteLightPicture);
+                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'connected', 'status', 'delete'];
+                components.gridData = [];
 
-    cellId.appendChild(idLight);
-    cellRoomId.appendChild(idRoom);
-    cellLevel.appendChild(level);
-    cellColor.appendChild(color);
-    cellSwitchLight.appendChild(switchLight);
-    cellDeleteLight.appendChild(deleteLight);
+                ajaxGet(getLights + lien.id, function (reponse) {
+                    createLight(JSON.parse(reponse));
+                });
+            };
 
-    // add the cells to the line
-    const line = document.createElement("tr");
-    line.className = "cell";
+            idRoom.onclick = function () {
+                cleanElement(formAddItem);
+                modifyAddButton(true, "Add room");
 
-    line.appendChild(cellId);
-    line.appendChild(cellRoomId);
-    line.appendChild(cellLevel);
-    line.appendChild(cellColor);
-    line.appendChild(cellSwitchLight);
-    line.appendChild(cellDeleteLight);
+                components.gridColumns = ['id', 'name', 'floor', 'status', 'delete'];
+                components.gridData = [];
 
-    return line;
+                ajaxGet(getRooms + lien.roomId, function (reponse) {
+                    createRoom(JSON.parse(reponse));
+                });
+            };
+
+            level.onchange = function (e) {
+                lien.level = e.target.value;
+                ajaxPost(getLights, lien, function (reponse) {
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? {
+                        id: lien.id,
+                        roomId: lien.roomId,
+                        level: lien.level,
+                        hue: lien.hue,
+                        saturation: lien.saturation,
+                        connected: lien.connected,
+                        color: "color_" + lien.id,
+                        status: "status_" + lien.id,
+                        delete: "delete_" + lien.id
+                    } : el)
+                }, true);
+            };
+
+            hue.onchange = function (e) {
+                lien.hue = e.target.value;
+                ajaxPost(getLights, lien, function (reponse) {
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? {
+                        id: lien.id,
+                        roomId: lien.roomId,
+                        level: lien.level,
+                        hue: lien.hue,
+                        saturation: lien.saturation,
+                        connected: lien.connected,
+                        color: "color_" + lien.id,
+                        status: "status_" + lien.id,
+                        delete: "delete_" + lien.id
+                    } : el)
+                }, true);
+            };
+
+            saturation.onchange = function (e) {
+                lien.saturation = e.target.value;
+                ajaxPost(getLights, lien, function (reponse) {
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? {
+                        id: lien.id,
+                        roomId: lien.roomId,
+                        level: lien.level,
+                        hue: lien.hue,
+                        saturation: lien.saturation,
+                        connected: lien.connected,
+                        color: "color_" + lien.id,
+                        status: "status_" + lien.id,
+                        delete: "delete_" + lien.id
+                    } : el)
+                }, true);
+            };
+
+            switchLight.onclick = function () {
+                lien.status = lien.status == "ON" ? "OFF" : "ON";
+                ajaxPost(getLights, lien, function (reponse) {
+                    switchLightPitcure.src = lien.status == "ON" ? "media/light_bulb_on.png" : "media/light_bulb_off.png";
+                }, true);
+            };
+
+            deleteLight.onclick = function () {
+                ajaxDelete(getLights + lien.id, function (reponse) {
+                    components.gridData = components.gridData.filter(el => el.id !== lien.id)
+                }, true);
+            };
+        } else {
+            setTimeout(checkLight, 100);
+        }
+    }
+
+    checkLight();
+
 }
 
 function createRoom(lien) {
 
-    // Room id
-    const idRoom = document.createElement("button");
-    idRoom.appendChild(document.createTextNode(lien.id));
-
-    idRoom.addEventListener("click", function () {
-        cleanElement(tableau);
-        cleanElement(formAddItem);
-        tableau.appendChild(modifyTable("Light"));
-        modifyAddButton(true, "Add light");
-        ajaxGet(getLights, function (reponse) {
-            var lights = JSON.parse(reponse);
-            lights.forEach(function (light) {
-                if (light.roomId == lien.id) {
-                    const lienElt = createLight(light);
-                    tableau.appendChild(lienElt);
-                }
-            })
-        });
+    components.gridData.push({
+        id: lien.id,
+        name: lien.name,
+        floor: lien.floor,
+        buildingId: lien.buildingId,
+        status: "status_" + lien.id,
+        delete: "delete_" + lien.id
     });
 
-    // Building id
-    const idBuilding = document.createElement("button");
-    idBuilding.appendChild(document.createTextNode(lien.buildingId));
+    function checkRoom() {
 
-    idBuilding.addEventListener("click", function () {
-        cleanElement(tableau);
-        tableau.appendChild(modifyTable("Building"));
-        ajaxGet(getBuildings + lien.buildingId, function (reponse) {
-            var lien = JSON.parse(reponse);
-            var lienElt = createBuilding(lien);
-            tableau.appendChild(lienElt);
-        });
-    });
+        if (document.getElementById("img_delete_" + lien.id)) {
 
-    // Name
-    const name = document.createElement("span");
-    name.appendChild(document.createTextNode(lien.name));
+            // Room id
+            const idRoom = document.getElementById("button_id_" + lien.id);
 
-    // Floor
-    const floor = document.createElement("button");
-    floor.appendChild(document.createTextNode(lien.floor));
+            // Name
+            const idName = document.getElementById("button_name_" + lien.id);
 
-    floor.addEventListener("click", function () {
-        cleanElement(tableau);
-        tableau.appendChild(modifyTable("Room"));
-        ajaxGet(getRooms, function (reponse) {
-            var reponseLien = JSON.parse(reponse);
-            reponseLien.forEach(function (thisLien) {
-                if (thisLien.floor == lien.floor) {
-                    var lienElt = createRoom(thisLien);
-                    tableau.appendChild(lienElt);
-                }
-            });
-        });
-    });
+            // Floor
+            const idFloor = document.getElementById("button_floor_" + lien.id);
 
-    // Switch light
-    //button
-    const switchLightRoom = document.createElement("button");
-    switchLightRoom.id = "switchLightRoom" + lien.id;
+            // Building id
+            const idBuilding = document.getElementById("button_buildingId_" + lien.id);
 
-    //CSS
-    const switchLightRoomPitcure = document.createElement("img");
+            // Switch light
+            //button
+            const switchLight = document.getElementById("button_status_" + lien.id);
 
-    //Check if all the lights are on
-    var isLightOn = false;
-    switchLightRoomPitcure.src = "media/light_switch_off.png";
+            //CSS
+            switchLight.removeChild(switchLight.lastChild);
+            const switchLightPitcure = document.getElementById("img_status_" + lien.id);
+            switchLightPitcure.style.display = "flex";
+            switchLightPitcure.src = lien.status == "ON" ? "media/light_switch_on.png" : "media/light_switch_off.png";
 
-    switchLightRoom.addEventListener("click", function () {
-        isLightOn = !isLightOn;
+            // Delete room
+            const deleteRoom = document.getElementById("button_delete_" + lien.id);
 
-        ajaxGet(getLights, function (reponse) {
-            const reponseLien = JSON.parse(reponse);
-            reponseLien.forEach(function (thisLien) {
-                if (thisLien.roomId == lien.id) {
+            deleteRoom.removeChild(deleteRoom.lastChild);
+            const deleteRoomPicture = document.getElementById("img_delete_" + lien.id);
+            deleteRoomPicture.style.display = "flex";
+            deleteRoomPicture.src = "media/delete.png";
 
-                    thisLien.status = isLightOn ? "ON" : "OFF";
+            //--------------------------------------------------------------------------
+            // DOM actions
+            //--------------------------------------------------------------------------
 
-                    ajaxPost(getLights, thisLien, function (reponse) {
+            idRoom.onclick = function () {
+                cleanElement(formAddItem);
+                modifyAddButton(true, "Add light");
 
-                    }, true);
+                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'connected', 'status', 'delete'];
+                components.gridData = [];
 
-                    switchLightRoomPitcure.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
-                }
-            });
-        });
-    });
+                ajaxGet(getRooms + lien.id + '/lights', function (reponse) {
+                    const reponseLien = JSON.parse(reponse);
+                    reponseLien.forEach(function (lien) {
+                        createLight(lien);
+                    });
+                });
+            };
 
-    ajaxGet(getLights, function (reponse) {
-        const reponseLien = JSON.parse(reponse);
-        reponseLien.forEach(function (thisLien) {
-            if (thisLien.roomId == lien.id) {
-                if (thisLien.status == "ON") {
-                    isLightOn = true;
-                    switchLightRoomPitcure.src = "media/light_switch_on.png";
-                    return;
-                }
-            }
-        });
-    });
+            idBuilding.onclick = function () {
+                cleanElement(formAddItem);
+                modifyAddButton(true, "Add building");
 
-    // Delete room
-    //button
-    const deleteRoom = document.createElement("button");
-    deleteRoom.id = "deleteRoom" + lien.id;
+                components.gridColumns = ['id', 'name', 'status', 'delete'];
+                components.gridData = [];
 
-    //CSS
-    const deleteRoomPicture = document.createElement("img");
-    deleteRoomPicture.src = "media/delete.png";
+                ajaxGet(getBuildings + lien.buildingId, function (reponse) {
+                    createBuilding(JSON.parse(reponse));
+                });
+            };
 
-    deleteRoom.addEventListener("click", function () {
-        ajaxDelete(getRooms + lien.id, function (reponse) {
-            tableau.removeChild(line);
-        }, true);
-    });
+            idFloor.onclick = function () {
+                components.gridData = components.gridData.filter(el => el.floor === lien.floor)
+            };
 
-    switchLightRoom.appendChild(switchLightRoomPitcure);
-    deleteRoom.appendChild(deleteRoomPicture);
+            switchLight.onclick = function () {
+                lien.status = lien.status == "ON" ? "OFF" : "ON";
+                ajaxPost(getRooms + lien.id + "/switch", lien, function (reponse) {
+                    switchLightPitcure.src = lien.status == "ON" ? "media/light_switch_on.png" : "media/light_switch_off.png";
+                }, true);
+            };
 
-    const cellId = document.createElement("td");
-    const cellFloor = document.createElement("td");
-    const cellName = document.createElement("td");
-    const cellBuildingId = document.createElement("td");
-    const cellSwitchLight = document.createElement("td");
-    const cellDeleteRoom = document.createElement("td");
+            deleteRoomPicture.onclick = function () {
+                ajaxDelete(getRooms + lien.id, function (reponse) {
+                    components.gridData = components.gridData.filter(el => el.id !== lien.id)
+                }, true);
+            };
+        } else {
+            setTimeout(checkRoom, 100);
+        }
+    }
 
-    cellId.appendChild(idRoom);
-    cellFloor.appendChild(floor);
-    cellName.appendChild(name);
-    cellBuildingId.appendChild(idBuilding);
-    cellSwitchLight.appendChild(switchLightRoom);
-    cellDeleteRoom.appendChild(deleteRoom);
-
-    // add the cells to the line
-    const line = document.createElement("tr");
-    line.className = "cell";
-    line.appendChild(cellId);
-    line.appendChild(cellName);
-    line.appendChild(cellFloor);
-    line.appendChild(cellBuildingId);
-    line.appendChild(cellSwitchLight);
-    line.appendChild(cellDeleteRoom);
-
-    return line;
+    checkRoom();
 }
 
 function createBuilding(lien) {
 
-    // Building id
-    const idBuilding = document.createElement("button");
-    idBuilding.appendChild(document.createTextNode(lien.id));
-
-    idBuilding.addEventListener("click", function () {
-        cleanElement(tableau);
-        cleanElement(formAddItem);
-        tableau.appendChild(modifyTable("Room"));
-        modifyAddButton(true, "Add room");
-        ajaxGet(getRooms, function (reponse) {
-            var rooms = JSON.parse(reponse);
-            rooms.forEach(function (room) {
-                if (room.buildingId == lien.id) {
-                    const lienElt = createRoom(room);
-                    tableau.appendChild(lienElt);
-                }
-            })
-        });
+    components.gridData.push({
+        id: lien.id,
+        name: lien.name,
+        status: "status_" + lien.id,
+        delete: "delete_" + lien.id
     });
 
-    // Name
-    const name = document.createElement("span");
-    name.appendChild(document.createTextNode(lien.name));
+    function checkBuilding() {
 
-    // Switch light
-    //button
-    const switchLightBuilding = document.createElement("button");
-    switchLightBuilding.id = "switchLightBuilding" + lien.id;
+        if (document.getElementById("img_delete_" + lien.id)) {
 
-    //CSS
-    const switchLightBuildingPicture = document.createElement("img");
+            // Room id
+            const idBuilding = document.getElementById("button_id_" + lien.id);
 
-    //Check if all the lights are on
-    var isLightOn = false;
-    switchLightBuildingPicture.src = "media/light_switch_off.png";
+            // Name
+            const idName = document.getElementById("button_name_" + lien.id);
 
-    switchLightBuilding.addEventListener("click", function () {
-        isLightOn = !isLightOn;
+            // Switch light
+            //button
+            const switchLight = document.getElementById("button_status_" + lien.id);
 
-        ajaxGet(getRooms, function (reponseRoom) {
-            const reponseRoomLien = JSON.parse(reponseRoom);
-            reponseRoomLien.forEach(function (thisRoom) {
-                if (thisRoom.buildingId == lien.id) {
-                    ajaxGet(getLights, function (reponseLight) {
-                        const reponseLightLien = JSON.parse(reponseLight);
-                        reponseLightLien.forEach(function (thisLight) {
-                            if (thisRoom.id == thisLight.roomId) {
+            //CSS
+            switchLight.removeChild(switchLight.lastChild);
+            const switchLightPitcure = document.getElementById("img_status_" + lien.id);
+            switchLightPitcure.style.display = "flex";
 
-                                thisLight.status = isLightOn ? "ON" : "OFF";
+            // Delete building
+            const deleteBuilding = document.getElementById("button_delete_" + lien.id);
 
-                                ajaxPost(getLights, thisLight, function (reponse) {
+            deleteBuilding.removeChild(deleteBuilding.lastChild);
+            const deleteBuildingPicture = document.getElementById("img_delete_" + lien.id);
+            deleteBuildingPicture.style.display = "flex";
+            deleteBuildingPicture.src = "media/delete.png";
 
-                                }, true);
+            //Check if all the lights are on
+            var isLightOn = false;
+            switchLightPitcure.src = "media/light_switch_off.png";
 
-                                switchLightBuildingPicture.src = isLightOn ? "media/light_switch_on.png" : "media/light_switch_off.png";
-                            }
-                        });
-                    });
-                }
+            ajaxGet(getBuildings + lien.id + '/rooms', function (reponse) {
+                const reponseLien = JSON.parse(reponse);
+                reponseLien.forEach(function (thisLien) {
+                    if (thisLien.status == "ON") {
+                        isLightOn = true;
+                        switchLightPitcure.src = "media/light_switch_on.png";
+                        return;
+                    };
+                });
             });
-        });
-    });
 
-    ajaxGet(getRooms, function (reponseRoom) {
-        const reponseRoomLien = JSON.parse(reponseRoom);
-        reponseRoomLien.forEach(function (thisRoom) {
-            if (thisRoom.buildingId == lien.id) {
-                ajaxGet(getLights, function (reponseLight) {
-                    const reponseLightLien = JSON.parse(reponseLight);
-                    reponseLightLien.forEach(function (thisLight) {
-                        if (thisLight.roomId == thisRoom.id) {
-                            if (thisLight.status == "ON") {
-                                isLightOn = true;
-                                switchLightBuildingPicture.src = "media/light_switch_on.png";
-                                return;
-                            }
-                        }
+            //--------------------------------------------------------------------------
+            // DOM actions
+            //--------------------------------------------------------------------------
+
+            idBuilding.onclick = function () {
+                cleanElement(formAddItem);
+                modifyAddButton(true, "Add room");
+
+                components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
+                components.gridData = [];
+
+                ajaxGet(getBuildings + lien.id + '/rooms', function (reponse) {
+                    const reponseLien = JSON.parse(reponse);
+                    reponseLien.forEach(function (lien) {
+                        createRoom(lien);
                     });
                 });
-            }
-        });
-    });
+            };
 
-    // Delete building
-    //button
-    const deleteBuilding = document.createElement("button");
-    deleteBuilding.id = "deleteBuilding" + lien.id;
+            deleteBuilding.onclick = function () {
+                ajaxDelete(getBuildings + lien.id, function (reponse) {
+                    components.gridData = components.gridData.filter(el => el.id !== lien.id)
+                }, true);
+            };
+        } else {
+            setTimeout(checkBuilding, 100);
+        }
+    }
 
-    //CSS
-    const deleteBuildingPicture = document.createElement("img");
-    deleteBuildingPicture.src = "media/delete.png";
+    checkBuilding();
 
-    deleteBuilding.addEventListener("click", function () {
-        ajaxDelete(getBuildings + lien.id, function (reponse) {
-            tableau.removeChild(line);
-        }, true);
-    });
-
-    const cellId = document.createElement("td");
-    const cellName = document.createElement("td");
-    const cellSwitchLight = document.createElement("td");
-    const cellDeleteBuilding = document.createElement("td");
-
-    switchLightBuilding.appendChild(switchLightBuildingPicture);
-    deleteBuilding.appendChild(deleteBuildingPicture);
-
-    cellId.appendChild(idBuilding);
-    cellName.appendChild(name);
-    cellSwitchLight.appendChild(switchLightBuilding);
-    cellDeleteBuilding.appendChild(deleteBuilding);
-
-    // add the cells to the line
-    const line = document.createElement("tr");
-    line.className = "cell";
-    line.appendChild(cellId);
-    line.appendChild(cellName);
-    line.appendChild(cellSwitchLight);
-    line.appendChild(cellDeleteBuilding);
-
-    return line;
 }
 
 function modifyAddButton(show, type) {
     addButton.innerHTML = type;
     divAddButton.style.display = show ? "block" : "none";
-    addButton.addEventListener("click", function () {
+    addButton.onclick = function () {
         divFormAddItem.style.display = "block";
         divFormAddItem.style.animationName = "addItem";
         divFormAddItem.style.animationDuration = "2s";
@@ -432,7 +380,7 @@ function modifyAddButton(show, type) {
         cleanElement(formAddItem);
 
         addItem(type);
-    });
+    };
 }
 
 function addItem(type) {
@@ -484,7 +432,7 @@ function addItem(type) {
         formAddItem.appendChild(status);
         formAddItem.appendChild(submit);
 
-        function addLight(e) {
+        formAddItem.onsubmit = function (e) {
             e.preventDefault();
 
             ajaxPost(getLights, {
@@ -493,10 +441,7 @@ function addItem(type) {
                 roomId: roomId.value
             }, function (reponse) {
 
-                const lienElt = createLight(JSON.parse(reponse));
-                tableau.appendChild(lienElt);
-
-                formAddItem.removeEventListener("submit", addLight);
+                createLight(JSON.parse(reponse));
 
                 cleanElement(formAddItem);
                 divFormAddItem.style.display = "none";
@@ -505,8 +450,6 @@ function addItem(type) {
             }, true);
 
         }
-
-        formAddItem.addEventListener("submit", addLight);
 
     } else if (type == "Add room") {
 
@@ -542,7 +485,7 @@ function addItem(type) {
         formAddItem.appendChild(buildingId);
         formAddItem.appendChild(submit);
 
-        function addRoom(e) {
+        formAddItem.onsubmit = function (e) {
             e.preventDefault();
 
             ajaxPost(getRooms, {
@@ -551,10 +494,7 @@ function addItem(type) {
                 buildingId: buildingId.value
             }, function (reponse) {
 
-                const lienElt = createRoom(JSON.parse(reponse));
-                tableau.appendChild(lienElt);
-
-                formAddItem.removeEventListener("submit", addRoom);
+                createRoom(JSON.parse(reponse));
 
                 cleanElement(formAddItem);
                 divFormAddItem.style.display = "none";
@@ -563,8 +503,6 @@ function addItem(type) {
             }, true);
 
         }
-
-        formAddItem.addEventListener("submit", addRoom);
 
     } else if (type == "Add building") {
 
@@ -579,7 +517,7 @@ function addItem(type) {
         formAddItem.appendChild(name);
         formAddItem.appendChild(submit);
 
-        function addBuilding(e) {
+        formAddItem.onsubmit = function (e) {
 
             e.preventDefault();
 
@@ -587,10 +525,7 @@ function addItem(type) {
                 name: name.value
             }, function (reponse) {
 
-                const lienElt = createBuilding(JSON.parse(reponse));
-                tableau.appendChild(lienElt);
-
-                formAddItem.removeEventListener("submit", addBuilding);
+                createBuilding(JSON.parse(reponse));
 
                 cleanElement(formAddItem);
                 divFormAddItem.style.display = "none";
@@ -599,14 +534,14 @@ function addItem(type) {
             }, true);
 
         }
-
-        formAddItem.addEventListener("submit", addBuilding);
     }
 }
 
 function cleanElement(element) {
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
+    if (element) {
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
     }
 }
 
@@ -623,45 +558,114 @@ const tableLights = document.getElementById("lights");
 const tableRooms = document.getElementById("rooms");
 const tableBuildings = document.getElementById("buildings");
 
-lightsButton.addEventListener("click", function () {
-    cleanElement(tableau);
+lightsButton.onclick = function () {
     cleanElement(formAddItem);
-    tableau.appendChild(modifyTable("Light"));
     modifyAddButton(true, "Add light");
+
+    components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'connected', 'status', 'delete'];
+    components.gridData = [];
+
     ajaxGet(getLights, function (reponse) {
         const reponseLien = JSON.parse(reponse);
         reponseLien.forEach(function (lien) {
-            const lienElt = createLight(lien);
-            tableau.appendChild(lienElt);
+            createLight(lien);
         });
     });
-});
+};
 
-roomsButton.addEventListener("click", function () {
-    cleanElement(tableau);
+roomsButton.onclick = function () {
     cleanElement(formAddItem);
-    tableau.appendChild(modifyTable("Room"));
     modifyAddButton(true, "Add room");
+
+    components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
+    components.gridData = [];
+
     ajaxGet(getRooms, function (reponse) {
         const reponseLien = JSON.parse(reponse);
         reponseLien.forEach(function (lien) {
-            const lienElt = createRoom(lien);
-            tableau.appendChild(lienElt);
+            createRoom(lien);
         });
     });
-});
+};
 
 
-buildingsButton.addEventListener("click", function () {
-    cleanElement(tableau);
+buildingsButton.onclick = function () {
     cleanElement(formAddItem);
-    tableau.appendChild(modifyTable("Building"));
     modifyAddButton(true, "Add building");
+
+    components.gridColumns = ['id', 'name', 'status', 'delete'];
+    components.gridData = [];
+
     ajaxGet(getBuildings, function (reponse) {
         const reponseLien = JSON.parse(reponse);
         reponseLien.forEach(function (lien) {
-            const lienElt = createBuilding(lien);
-            tableau.appendChild(lienElt);
+            createBuilding(lien);
         });
     });
-});
+};
+
+// register the grid component
+Vue.component('components-grid', {
+    template: '#components-grid-template',
+    props: {
+        data: Array,
+        columns: Array,
+        filterKey: String
+    },
+    data: function () {
+        var sortOrders = {}
+        this.columns.forEach(function (key) {
+            sortOrders[key] = 1
+        })
+        return {
+            sortKey: '',
+            sortOrders: sortOrders
+        }
+    },
+    computed: {
+        filteredData: function () {
+            var sortKey = this.sortKey
+            var filterKey = this.filterKey && this.filterKey.toLowerCase()
+            var order = this.sortOrders[sortKey] || 1
+            var data = this.data
+            if (filterKey) {
+                data = data.filter(function (row) {
+                    return Object.keys(row).some(function (key) {
+                        return String(row[key]).toLowerCase().indexOf(filterKey) > -1
+                    })
+                })
+            }
+            if (sortKey) {
+                data = data.slice().sort(function (a, b) {
+                    a = a[sortKey]
+                    b = b[sortKey]
+                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                })
+            }
+
+            return data
+        }
+    },
+    filters: {
+        capitalize: function (str) {
+            let temp = str.split(/(?=[A-Z])/);
+            temp[0] = temp[0].charAt(0).toUpperCase() + temp[0].slice(1)
+            return temp.join(' ');
+        }
+    },
+    methods: {
+        sortBy: function (key) {
+            this.sortKey = key
+            this.sortOrders[key] = this.sortOrders[key] * -1
+        }
+    }
+})
+
+const components = new Vue({
+    el: '#components',
+    data: {
+        searchQuery: '',
+        gridColumns: [],
+        gridData: []
+    }
+})

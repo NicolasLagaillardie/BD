@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Test Ws mqtt.js</title>
+    <title>Poject - Lightbulb</title>
     <link rel="stylesheet" type="text/css" href="index.css">
     <link rel="icon" type="image/png" href="/media/favicon.png">
 </head>
@@ -19,6 +19,8 @@
         </div>
     </header>
 
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
     <center>
 
         <div id="divAddButton" style="display: none" class="addButton">
@@ -30,13 +32,46 @@
             </form>
         </div>
 
-        <div class="divTable">
-            <table id="tableau">
+        <!-- component template -->
+        <script type="text/x-template" id="components-grid-template">
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="key in columns" @click="sortBy(key)" :class="{ active: sortKey == key }">
+                            {{ key | capitalize }}
+                            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+                      </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="entry in filteredData">
+                        <td v-for="key in columns">
+                            <span v-bind:id="'span_' + key + '_' + entry[columns[0]]">
+                                <button v-bind:id="'button_' + key + '_'  + entry[columns[0]]">
+                                    <img v-bind:id="'img_' + key + '_'  + entry[columns[0]]" style="display: none;">
+                                    <span>
+                                        {{entry[key]}}
+                                    </span>
+                                </button>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
+        </script>
+       
+        <!-- demo root element -->
+        <div id="components">
+            <form id="search">
+                Search <input name="query" v-model="searchQuery">
+            </form>
+            <components-grid :data="gridData" :columns="gridColumns" :filter-key="searchQuery">
+            </components-grid>
         </div>
-
+        
     </center>
-    
+
     <script src="ajax.js"></script>
     <script src="index.js"></script>
 </body>
