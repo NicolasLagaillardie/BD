@@ -436,48 +436,36 @@ function addItem(type) {
         formAddItem.appendChild(status);
         formAddItem.appendChild(submit);
 
-<<<<<<< HEAD
         formAddItem.onsubmit = function (e) {
             e.preventDefault();
-=======
-        if (!isAddLightInitialized) {
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
+            if (!isAddLightInitialized) {
 
-            isAddLightInitialized = !isAddLightInitialized;
+                isAddLightInitialized = !isAddLightInitialized;
 
-<<<<<<< HEAD
                 createLight(JSON.parse(reponse));
-=======
-            function addLight(e) {
-                e.preventDefault();
 
-                ajaxPost(getLights, {
-                    level: level.value,
-                    status: status.value,
-                    roomId: roomId.value
-                }, function (reponse) {
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
+                function addLight(e) {
+                    e.preventDefault();
 
-                    const lienElt = createLight(JSON.parse(reponse));
-                    tableau.appendChild(lienElt);
+                    ajaxPost(getLights, {
+                        level: level.value,
+                        status: status.value,
+                        roomId: roomId.value
+                    }, function (reponse) {
 
-                    cleanElement(formAddItem);
-                    divFormAddItem.style.display = "none";
-                    modifyAddButton(true, type);
+                        const lienElt = createLight(JSON.parse(reponse));
+                        tableau.appendChild(lienElt);
 
-                    //formAddItem.removeEventListener("submit", addLight);
+                        cleanElement(formAddItem);
+                        divFormAddItem.style.display = "none";
+                        modifyAddButton(true, type);
 
-                }, true);
+                    }, true);
 
+                }
             }
-
-<<<<<<< HEAD
-=======
-            formAddItem.addEventListener("submit", addLight);
-
         }
 
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
     } else if (type == "Add room") {
 
         const name = document.createElement("input");
@@ -512,48 +500,37 @@ function addItem(type) {
         formAddItem.appendChild(buildingId);
         formAddItem.appendChild(submit);
 
-<<<<<<< HEAD
         formAddItem.onsubmit = function (e) {
             e.preventDefault();
-=======
-        if (!isAddRoomInitialized) {
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
+            if (!isAddRoomInitialized) {
 
-            isAddRoomInitialized = !isAddRoomInitialized;
+                isAddRoomInitialized = !isAddRoomInitialized;
 
-<<<<<<< HEAD
                 createRoom(JSON.parse(reponse));
-=======
-            function addRoom(e) {
-                e.preventDefault();
 
-                ajaxPost(getRooms, {
-                    name: name.value,
-                    floor: floor.value,
-                    buildingId: buildingId.value
-                }, function (reponse) {
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
+                function addRoom(e) {
+                    e.preventDefault();
 
-                    const lienElt = createRoom(JSON.parse(reponse));
-                    tableau.appendChild(lienElt);
+                    ajaxPost(getRooms, {
+                        name: name.value,
+                        floor: floor.value,
+                        buildingId: buildingId.value
+                    }, function (reponse) {
 
-                    cleanElement(formAddItem);
-                    divFormAddItem.style.display = "none";
-                    modifyAddButton(true, type);
+                        const lienElt = createRoom(JSON.parse(reponse));
+                        tableau.appendChild(lienElt);
 
-                    //formAddItem.removeEventListener("submit", addRoom);
+                        cleanElement(formAddItem);
+                        divFormAddItem.style.display = "none";
+                        modifyAddButton(true, type);
 
-                }, true);
+                        //formAddItem.removeEventListener("submit", addRoom);
 
-<<<<<<< HEAD
-=======
+                    }, true);
+                }
             }
-
-            formAddItem.addEventListener("submit", addRoom);
-
         }
 
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
     } else if (type == "Add building") {
 
         const name = document.createElement("input");
@@ -567,46 +544,35 @@ function addItem(type) {
         formAddItem.appendChild(name);
         formAddItem.appendChild(submit);
 
-<<<<<<< HEAD
         formAddItem.onsubmit = function (e) {
-=======
-        if (!isAddBuildingInitialized) {
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
+            if (!isAddBuildingInitialized) {
 
-            isAddBuildingInitialized = !isAddBuildingInitialized;
+                isAddBuildingInitialized = !isAddBuildingInitialized;
 
-            function addBuilding(e) {
+                function addBuilding(e) {
 
-<<<<<<< HEAD
-                createBuilding(JSON.parse(reponse));
-=======
-                e.preventDefault();
+                    createBuilding(JSON.parse(reponse));
+                    e.preventDefault();
 
-                ajaxPost(getBuildings, {
-                    name: name.value
-                }, function (reponse) {
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
+                    ajaxPost(getBuildings, {
+                        name: name.value
+                    }, function (reponse) {
 
-                    const lienElt = createBuilding(JSON.parse(reponse));
-                    tableau.appendChild(lienElt);
+                        const lienElt = createBuilding(JSON.parse(reponse));
+                        tableau.appendChild(lienElt);
 
-                    cleanElement(formAddItem);
-                    divFormAddItem.style.display = "none";
-                    modifyAddButton(true, type);
+                        cleanElement(formAddItem);
+                        divFormAddItem.style.display = "none";
+                        modifyAddButton(true, type);
 
-<<<<<<< HEAD
-=======
-                    //formAddItem.removeEventListener("submit", addBuilding);
+                    }, true);
 
-                }, true);
+                }
 
             }
-
-            formAddItem.addEventListener("submit", addBuilding);
-
->>>>>>> 3741fb9567860910c1998991159893ad18f3e23c
         }
     }
+
 }
 
 function cleanElement(element) {
