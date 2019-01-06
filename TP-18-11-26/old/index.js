@@ -1,7 +1,33 @@
+//--------------------------------------------------------------------------
+// URL
+//-------------------------------------------------------------------------- 
+
 const serverURL = "https://faircorp-paul-breugnot.cleverapps.io/api/";
 const getLights = serverURL + "lights/";
 const getRooms = serverURL + "rooms/";
 const getBuildings = serverURL + "buildings/";
+
+//--------------------------------------------------------------------------
+// DOM elements
+//--------------------------------------------------------------------------  
+
+const tableau = document.getElementById("tableau");
+const lightsButton = document.getElementById("lightsButton");
+const roomsButton = document.getElementById("roomsButton");
+const buildingsButton = document.getElementById("buildingsButton");
+const addButton = document.getElementById("addButton");
+const divAddButton = document.getElementById("divAddButton");
+const formAddItem = document.getElementById("formAddItem");
+const divFormAddItem = document.getElementById("divFormAddItem");
+
+let lastButton = roomsButton;
+const tableLights = document.getElementById("lights");
+const tableRooms = document.getElementById("rooms");
+const tableBuildings = document.getElementById("buildings");
+
+//--------------------------------------------------------------------------
+// DOM actions
+//--------------------------------------------------------------------------   
 
 function createLight(lien) {
 
@@ -11,6 +37,7 @@ function createLight(lien) {
         level: lien.level,
         hue: lien.hue,
         saturation: lien.saturation,
+        value: lien.value,
         connected: lien.connected,
         status: "status_" + lien.id,
         delete: "delete_" + lien.id
@@ -34,17 +61,23 @@ function createLight(lien) {
             level.value = lien.level;
             spanLevel.removeChild(spanLevel.firstChild);
             spanLevel.appendChild(level);
+            
+            const outputLevel = document.getElementById("output_level_" + lien.id);
+            outputLevel.style.display = "flex";
 
             // Hue
             const spanHue = document.getElementById("span_hue_" + lien.id);
             const hue = document.createElement("input");
             hue.type = "range";
             hue.min = 0;
-            hue.max = 1;
-            hue.step = 0.1;
+            hue.max = 255;
+            hue.step = "any";
             hue.value = lien.hue;
             spanHue.removeChild(spanHue.firstChild);
             spanHue.appendChild(hue);
+            
+            const outputHue = document.getElementById("output_hue_" + lien.id);
+            outputHue.style.display = "flex";
 
             // Saturation
             const spanSaturation = document.getElementById("span_saturation_" + lien.id);
@@ -52,10 +85,27 @@ function createLight(lien) {
             saturation.type = "range";
             saturation.min = 0;
             saturation.max = 1;
-            saturation.step = 0.1;
+            saturation.step = "any";
             saturation.value = lien.saturation;
             spanSaturation.removeChild(spanSaturation.firstChild);
             spanSaturation.appendChild(saturation);
+            
+            const outputSaturation = document.getElementById("output_saturation_" + lien.id);
+            outputSaturation.style.display = "flex";
+
+            // Value
+            const spanValue = document.getElementById("span_value_" + lien.id);
+            const value = document.createElement("input");
+            value.type = "range";
+            value.min = 0;
+            value.max = 1;
+            value.step = "any";
+            value.value = lien.value;
+            spanValue.removeChild(spanValue.firstChild);
+            spanValue.appendChild(value);
+            
+            const outputValue = document.getElementById("output_value_" + lien.id);
+            outputValue.style.display = "flex";
 
             // Connected light
             //button
@@ -93,7 +143,7 @@ function createLight(lien) {
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add light");
 
-                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'connected', 'status', 'delete'];
+                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'connected', 'status', 'delete'];
                 components.gridData = [];
 
                 ajaxGet(getLights + lien.id, function (reponse) {
@@ -113,61 +163,78 @@ function createLight(lien) {
                 });
             };
 
+            level.oninput = function(e){
+                outputLevel.innerHTML = e.target.value;
+            }
+
             level.onchange = function (e) {
                 lien.level = e.target.value;
                 ajaxPost(getLights, lien, function (reponse) {
-                    components.gridData = components.gridData.filter(el => el.id === lien.id ? {
-                        id: lien.id,
-                        roomId: lien.roomId,
-                        level: lien.level,
-                        hue: lien.hue,
-                        saturation: lien.saturation,
-                        connected: lien.connected,
-                        color: "color_" + lien.id,
-                        status: "status_" + lien.id,
-                        delete: "delete_" + lien.id
-                    } : el)
+                    const result = JSON.parse(reponse);
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    level.value = result.level;
                 }, true);
             };
 
+            hue.oninput = function(e){
+                outputHue.innerHTML = e.target.value;
+            }
+            
             hue.onchange = function (e) {
-                lien.hue = e.target.value;
-                ajaxPost(getLights, lien, function (reponse) {
-                    components.gridData = components.gridData.filter(el => el.id === lien.id ? {
-                        id: lien.id,
-                        roomId: lien.roomId,
-                        level: lien.level,
-                        hue: lien.hue,
-                        saturation: lien.saturation,
-                        connected: lien.connected,
-                        color: "color_" + lien.id,
-                        status: "status_" + lien.id,
-                        delete: "delete_" + lien.id
-                    } : el)
+                const newColor = {
+                    "argb": -15253461,
+                    "hue": e.target.value,
+                    "saturation": lien.saturation,
+                    "value": lien.value
+                }
+                ajaxPost(getLights + lien.id + '/color', newColor, function (reponse) {
+                    const result = JSON.parse(reponse);
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    hue.value = result.hue;
                 }, true);
             };
+
+            saturation.oninput = function(e){
+                outputSaturation.innerHTML = e.target.value;
+            }
 
             saturation.onchange = function (e) {
-                lien.saturation = e.target.value;
-                ajaxPost(getLights, lien, function (reponse) {
-                    components.gridData = components.gridData.filter(el => el.id === lien.id ? {
-                        id: lien.id,
-                        roomId: lien.roomId,
-                        level: lien.level,
-                        hue: lien.hue,
-                        saturation: lien.saturation,
-                        connected: lien.connected,
-                        color: "color_" + lien.id,
-                        status: "status_" + lien.id,
-                        delete: "delete_" + lien.id
-                    } : el)
+                const newColor = {
+                    "argb": -15253461,
+                    "hue": lien.hue,
+                    "saturation": e.target.value,
+                    "value": lien.value
+                }
+                ajaxPost(getLights + lien.id + '/color', newColor, function (reponse) {
+                    const result = JSON.parse(reponse);
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    saturation.value = result.saturation;
+                }, true);
+            };
+
+            value.oninput = function(e){
+                outputValue.innerHTML = e.target.value;
+            }
+
+            value.onchange = function (e) {
+                const newColor = {
+                    "argb": -15253461,
+                    "hue": lien.hue,
+                    "saturation": lien.saturation,
+                    "value": e.target.value
+                }
+                ajaxPost(getLights + lien.id + '/color', newColor, function (reponse) {
+                    const result = JSON.parse(reponse);
+                    components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    value.value = result.value;
                 }, true);
             };
 
             switchLight.onclick = function () {
                 lien.status = lien.status == "ON" ? "OFF" : "ON";
                 ajaxPost(getLights, lien, function (reponse) {
-                    switchLightPitcure.src = lien.status == "ON" ? "media/light_bulb_on.png" : "media/light_bulb_off.png";
+                    const result = JSON.parse(reponse);
+                    switchLightPitcure.src = result.status == "ON" ? "media/light_bulb_on.png" : "media/light_bulb_off.png";
                 }, true);
             };
 
@@ -238,7 +305,7 @@ function createRoom(lien) {
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add light");
 
-                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'connected', 'status', 'delete'];
+                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'connected', 'status', 'delete'];
                 components.gridData = [];
 
                 ajaxGet(getRooms + lien.id + '/lights', function (reponse) {
@@ -268,7 +335,8 @@ function createRoom(lien) {
             switchLight.onclick = function () {
                 lien.status = lien.status == "ON" ? "OFF" : "ON";
                 ajaxPost(getRooms + lien.id + "/switch", lien, function (reponse) {
-                    switchLightPitcure.src = lien.status == "ON" ? "media/light_switch_on.png" : "media/light_switch_off.png";
+                    const result = JSON.parse(reponse);
+                    switchLightPitcure.src = result.status == "ON" ? "media/light_switch_on.png" : "media/light_switch_off.png";
                 }, true);
             };
 
@@ -370,7 +438,7 @@ function createBuilding(lien) {
 }
 
 function modifyAddButton(show, type) {
-    addButton.innerHTML = type;
+    //addButton.innerHTML = type;
     divAddButton.style.display = show ? "block" : "none";
     addButton.onclick = function () {
         divFormAddItem.style.display = "block";
@@ -414,10 +482,7 @@ function addItem(type) {
         level.max = "255";
         level.value = "0";
         level.required = true;
-
-        // Color
-        const color = document.createElement("input");
-        color.type = "color";
+        level.style.width = "10em";
 
         const status = document.createElement("select");
         const on = document.createElement("option");
@@ -432,7 +497,6 @@ function addItem(type) {
 
         formAddItem.appendChild(roomId);
         formAddItem.appendChild(level);
-        formAddItem.appendChild(color);
         formAddItem.appendChild(status);
         formAddItem.appendChild(submit);
 
@@ -453,8 +517,7 @@ function addItem(type) {
                         roomId: roomId.value
                     }, function (reponse) {
 
-                        const lienElt = createLight(JSON.parse(reponse));
-                        tableau.appendChild(lienElt);
+                        createLight(JSON.parse(reponse));
 
                         cleanElement(formAddItem);
                         divFormAddItem.style.display = "none";
@@ -475,7 +538,7 @@ function addItem(type) {
 
         const floor = document.createElement("input");
         floor.type = "number"
-        floor.placeholder = "0";
+        floor.placeholder = "Floor";
         floor.required = true;
 
         const buildingId = document.createElement("select");
@@ -517,8 +580,7 @@ function addItem(type) {
                         buildingId: buildingId.value
                     }, function (reponse) {
 
-                        const lienElt = createRoom(JSON.parse(reponse));
-                        tableau.appendChild(lienElt);
+                        createRoom(JSON.parse(reponse));
 
                         cleanElement(formAddItem);
                         divFormAddItem.style.display = "none";
@@ -558,8 +620,7 @@ function addItem(type) {
                         name: name.value
                     }, function (reponse) {
 
-                        const lienElt = createBuilding(JSON.parse(reponse));
-                        tableau.appendChild(lienElt);
+                        createBuilding(JSON.parse(reponse));
 
                         cleanElement(formAddItem);
                         divFormAddItem.style.display = "none";
@@ -583,24 +644,18 @@ function cleanElement(element) {
     }
 }
 
-const tableau = document.getElementById("tableau");
-const lightsButton = document.getElementById("lightsButton");
-const roomsButton = document.getElementById("roomsButton");
-const buildingsButton = document.getElementById("buildingsButton");
-const addButton = document.getElementById("addButton");
-const divAddButton = document.getElementById("divAddButton");
-const formAddItem = document.getElementById("formAddItem");
-const divFormAddItem = document.getElementById("divFormAddItem");
-
-const tableLights = document.getElementById("lights");
-const tableRooms = document.getElementById("rooms");
-const tableBuildings = document.getElementById("buildings");
+function changeBorder(elt) {
+    lastButton.style.color = "#ffffff";
+    elt.style.color = "#000000";
+    lastButton = elt;
+}
 
 lightsButton.onclick = function () {
+    changeBorder(lightsButton);
     cleanElement(formAddItem);
     modifyAddButton(true, "Add light");
 
-    components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'connected', 'status', 'delete'];
+    components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'connected', 'status', 'delete'];
     components.gridData = [];
 
     ajaxGet(getLights, function (reponse) {
@@ -612,6 +667,7 @@ lightsButton.onclick = function () {
 };
 
 roomsButton.onclick = function () {
+    changeBorder(roomsButton);
     cleanElement(formAddItem);
     modifyAddButton(true, "Add room");
 
@@ -628,6 +684,7 @@ roomsButton.onclick = function () {
 
 
 buildingsButton.onclick = function () {
+    changeBorder(buildingsButton);
     cleanElement(formAddItem);
     modifyAddButton(true, "Add building");
 
@@ -690,12 +747,6 @@ Vue.component('components-grid', {
             temp[0] = temp[0].charAt(0).toUpperCase() + temp[0].slice(1)
             return temp.join(' ');
         }
-    },
-    methods: {
-        sortBy: function (key) {
-            this.sortKey = key
-            this.sortOrders[key] = this.sortOrders[key] * -1
-        }
     }
 })
 
@@ -706,4 +757,19 @@ const components = new Vue({
         gridColumns: [],
         gridData: []
     }
-})
+});
+
+cleanElement(formAddItem);
+modifyAddButton(true, "Add room");
+
+components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
+components.gridData = [];
+
+ajaxGet(getRooms, function (reponse) {
+    const reponseLien = JSON.parse(reponse);
+    reponseLien.forEach(function (lien) {
+        createRoom(lien);
+    });
+});
+
+roomsButton.style.color = "#000000";

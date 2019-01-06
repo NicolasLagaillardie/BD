@@ -1,30 +1,40 @@
 <html>
 
 <head>
-    <title>Poject - Lightbulb</title>
+    <title>Lightbulb</title>
     <link rel="stylesheet" type="text/css" href="index.css">
-    <link rel="icon" type="image/png" href="/media/favicon.png">
+    <link rel="icon" type="image/png" href="/media/logo.png">
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 </head>
 
 <body>
 
     <header>
         <div class="title">
-            <h1><a href="/">Project - Computer science</a> </h1>
+            <h1>
+                <a href="/">
+                    <img src="media/logo.png" style="width: 2em; height: auto; border-radius: 10px;">
+                </a>
+            </h1>
         </div>
-        <div class="buttonHeader">
-            <button id="lightsButton">Lights</button>
-            <button id="roomsButton">Rooms</button>
-            <button id="buildingsButton">Buildings</button>
+        <br style="clear:both;" />
+        <div class="divButtonHeader">
+            <button id="lightsButton" class="buttonHeader">Lights</button>
+            <button id="roomsButton" class="buttonHeader">Rooms</button>
+            <button id="buildingsButton" class="buttonHeader">Buildings</button>
         </div>
     </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 
     <center>
 
         <div id="divAddButton" style="display: none" class="addButton">
-            <button id="addButton"></button>
+            <br>
+            <button id="addButton" class="buttonAdd">
+                <img src="media/add.png" style="display: flex;" class="imgAdd">
+            </button>
+            <br>
+            <br>
         </div>
 
         <div id="divFormAddItem" class="divFormAddItem" style="display: none">
@@ -37,10 +47,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th v-for="key in columns" @click="sortBy(key)" :class="{ active: sortKey == key }">
+                        <th v-for="key in columns" :class="{ active: sortKey == key }">
                             {{ key | capitalize }}
-                            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-                      </span>
                         </th>
                     </tr>
                 </thead>
@@ -54,22 +62,21 @@
                                         {{entry[key]}}
                                     </span>
                                 </button>
+                                <output v-bind:id="'output_' + key + '_'  + entry[columns[0]]" style="display: none;">
+                                </output>
                             </span>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </script>
-       
+
         <!-- demo root element -->
-        <div id="components">
-            <form id="search">
-                Search <input name="query" v-model="searchQuery">
-            </form>
+        <div id="components" class="idTable">
             <components-grid :data="gridData" :columns="gridColumns" :filter-key="searchQuery">
             </components-grid>
         </div>
-        
+
     </center>
 
     <script src="ajax.js"></script>
