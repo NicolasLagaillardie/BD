@@ -4,7 +4,8 @@
     <title>Lightbulb</title>
     <link rel="stylesheet" type="text/css" href="index.css">
     <link rel="icon" type="image/png" href="/media/logo.png">
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="vue.js"></script>
+    <script src="mqtt.min.js"></script>
 </head>
 
 <body>
@@ -62,9 +63,7 @@
                                     <span>
                                         {{entry[key]}}
                                     </span>
-                                </button>
-                                <output v-bind:id="'output_' + key + '_'  + entry[columns[0]]" style="display: none;">
-                                </output>
+                            </button>
                             </span>
                         </td>
                     </tr>

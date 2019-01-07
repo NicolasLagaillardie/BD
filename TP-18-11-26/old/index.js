@@ -2,7 +2,7 @@
 // URL
 //-------------------------------------------------------------------------- 
 
-const serverURL = "https://faircorp-paul-breugnot.cleverapps.io/api/";
+const serverURL = "http://192.168.12.1:8080/api/";
 const getLights = serverURL + "lights/";
 const getRooms = serverURL + "rooms/";
 const getBuildings = serverURL + "buildings/";
@@ -26,8 +26,137 @@ const tableRooms = document.getElementById("rooms");
 const tableBuildings = document.getElementById("buildings");
 
 //--------------------------------------------------------------------------
+// MQTT
+//--------------------------------------------------------------------------
+
+const client = mqtt.connect("mqtt://192.168.12.1:9001");
+
+function subscribe() {
+    // subscribe to some topic
+    client.on("connect", function () {
+        client.subscribe("/connected", function (err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+        client.subscribe("/disconnected", function (err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    });
+
+    // this will be called when a message is received
+    client.on("message", function (topic, payload) {
+        const message = new TextDecoder("utf-8").decode(payload);
+
+        const connectedLightPitcure = document.getElementById("img_connected_" + message);
+        if (connectedLightPitcure) {
+            connectedLightPitcure.src = topic == "/connected" ? "media/connected.svg" : "media/disconnected.svg";
+        }
+
+    });
+
+    return;
+};
+
+//--------------------------------------------------------------------------
 // DOM actions
 //--------------------------------------------------------------------------   
+
+function hsvToRgb(h, s, v) {
+    var r, g, b;
+
+    var i = Math.floor(h * 6);
+    var f = h * 6 - i;
+    var p = v * (1 - s);
+    var q = v * (1 - f * s);
+    var t = v * (1 - (1 - f) * s);
+
+    switch (i % 6) {
+        case 0:
+            r = v, g = t, b = p;
+            break;
+        case 1:
+            r = q, g = v, b = p;
+            break;
+        case 2:
+            r = p, g = v, b = t;
+            break;
+        case 3:
+            r = p, g = q, b = v;
+            break;
+        case 4:
+            r = t, g = p, b = v;
+            break;
+        case 5:
+            r = v, g = p, b = q;
+            break;
+    }
+
+    const R = parseInt(r * 255);
+    const B = parseInt(b * 255);
+    const G = parseInt(g * 255);
+
+    return [R, G, B];
+}
+
+function rgbToBin(RGB) {
+    return parseInt("111111" + RGB[0].toString(2) + RGB[1].toString(2) + RGB[2].toString(2), 2);
+}
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(RGB) {
+    return "#" + componentToHex(RGB[0]) + componentToHex(RGB[1]) + componentToHex(RGB[2]);
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function hex2bin(hex) {
+    return (parseInt(hex, 16).toString(10));
+}
+
+function rgbToHsv(r, g, b) {
+    r /= 255, g /= 255, b /= 255;
+
+    var max = Math.max(r, g, b),
+        min = Math.min(r, g, b);
+    var h, s, v = max;
+
+    var d = max - min;
+    s = max == 0 ? 0 : d / max;
+
+    if (max == min) {
+        h = 0; // achromatic
+    } else {
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / d + 2;
+                break;
+            case b:
+                h = (r - g) / d + 4;
+                break;
+        }
+
+        h /= 6;
+    }
+
+    return [h, s, v];
+}
 
 function createLight(lien) {
 
@@ -38,6 +167,7 @@ function createLight(lien) {
         hue: lien.hue,
         saturation: lien.saturation,
         value: lien.value,
+        color: rgbToHex(hsvToRgb(lien.hue, lien.saturation, lien.value)),
         connected: lien.connected,
         status: "status_" + lien.id,
         delete: "delete_" + lien.id
@@ -62,22 +192,16 @@ function createLight(lien) {
             spanLevel.removeChild(spanLevel.firstChild);
             spanLevel.appendChild(level);
 
-            const outputLevel = document.getElementById("output_level_" + lien.id);
-            outputLevel.style.display = "flex";
-
             // Hue
             const spanHue = document.getElementById("span_hue_" + lien.id);
             const hue = document.createElement("input");
             hue.type = "range";
             hue.min = 0;
-            hue.max = 255;
+            hue.max = 360;
             hue.step = "any";
             hue.value = lien.hue;
             spanHue.removeChild(spanHue.firstChild);
             spanHue.appendChild(hue);
-
-            const outputHue = document.getElementById("output_hue_" + lien.id);
-            outputHue.style.display = "flex";
 
             // Saturation
             const spanSaturation = document.getElementById("span_saturation_" + lien.id);
@@ -90,9 +214,6 @@ function createLight(lien) {
             spanSaturation.removeChild(spanSaturation.firstChild);
             spanSaturation.appendChild(saturation);
 
-            const outputSaturation = document.getElementById("output_saturation_" + lien.id);
-            outputSaturation.style.display = "flex";
-
             // Value
             const spanValue = document.getElementById("span_value_" + lien.id);
             const value = document.createElement("input");
@@ -104,15 +225,22 @@ function createLight(lien) {
             spanValue.removeChild(spanValue.firstChild);
             spanValue.appendChild(value);
 
-            const outputValue = document.getElementById("output_value_" + lien.id);
-            outputValue.style.display = "flex";
+            // Color
+            const spanColor = document.getElementById("span_color_" + lien.id);
+            const parentSpanColor = spanColor.parentElement;
+            const color = document.createElement("div");
+            color.style.border = "1px solid black";
+            color.style.padding = "1em";
+            color.style.backgroundColor = rgbToHex(hsvToRgb(lien.hue, lien.saturation, lien.value));
+            parentSpanColor.removeChild(parentSpanColor.firstChild);
+            parentSpanColor.appendChild(color);
 
             // Connected light
             //button
             const connectedLight = document.getElementById("button_connected_" + lien.id);
+            connectedLight.removeChild(connectedLight.lastChild);
 
             //CSS
-            connectedLight.removeChild(connectedLight.lastChild);
             const connectedLightPitcure = document.getElementById("img_connected_" + lien.id);
             connectedLightPitcure.style.display = "flex";
             connectedLightPitcure.src = lien.connected ? "media/connected.svg" : "media/disconnected.svg";
@@ -137,13 +265,14 @@ function createLight(lien) {
 
             //--------------------------------------------------------------------------
             // DOM actions
-            //--------------------------------------------------------------------------   
+            //--------------------------------------------------------------------------
 
             idLight.onclick = function () {
+                changeBorder(lightsButton);
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add light");
 
-                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'connected', 'status', 'delete'];
+                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'color', 'value', 'connected', 'status', 'delete'];
                 components.gridData = [];
 
                 ajaxGet(getLights + lien.id, function (reponse) {
@@ -152,10 +281,11 @@ function createLight(lien) {
             };
 
             idRoom.onclick = function () {
+                changeBorder(roomsButton);
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add room");
 
-                components.gridColumns = ['id', 'name', 'floor', 'status', 'delete'];
+                components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
                 components.gridData = [];
 
                 ajaxGet(getRooms + lien.roomId, function (reponse) {
@@ -164,7 +294,6 @@ function createLight(lien) {
             };
 
             level.oninput = function (e) {
-                outputLevel.innerHTML = e.target.value;
                 lien.level = e.target.value;
                 ajaxPost(getLights, lien, function (reponse) {
                     const result = JSON.parse(reponse);
@@ -174,53 +303,59 @@ function createLight(lien) {
             }
 
             hue.oninput = function (e) {
-                outputHue.innerHTML = e.target.value;
+                const RGB = hsvToRgb(e.target.value, lien.saturation, lien.value);
                 const newColor = {
-                    "argb": -15253461,
+                    "argb": rgbToBin(RGB),
                     "hue": e.target.value,
                     "saturation": lien.saturation,
                     "value": lien.value
                 }
-                ajaxPost(getLights + lien.id + '/color', newColor, function (reponse) {
+                ajaxPut(getLights + lien.id + '/color', newColor, function (reponse) {
                     const result = JSON.parse(reponse);
                     components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    lien.hue = result.hue;
                     hue.value = result.hue;
+                    color.style.backgroundColor = rgbToHex(hsvToRgb(lien.hue, lien.saturation, lien.value));
                 }, true);
             }
 
             saturation.oninput = function (e) {
-                outputSaturation.innerHTML = e.target.value;
+                const RGB = hsvToRgb(lien.hue, e.target.value, lien.value);
                 const newColor = {
-                    "argb": -15253461,
+                    "argb": rgbToBin(RGB),
                     "hue": lien.hue,
                     "saturation": e.target.value,
                     "value": lien.value
-                }
-                ajaxPost(getLights + lien.id + '/color', newColor, function (reponse) {
+                };
+                ajaxPut(getLights + lien.id + '/color', newColor, function (reponse) {
                     const result = JSON.parse(reponse);
                     components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    lien.saturation = result.saturation;
                     saturation.value = result.saturation;
+                    color.style.backgroundColor = rgbToHex(hsvToRgb(lien.hue, lien.saturation, lien.value));
                 }, true);
             };
 
             value.oninput = function (e) {
-                outputValue.innerHTML = e.target.value;
+                const RGB = hsvToRgb(lien.hue, lien.saturation, e.target.value);
                 const newColor = {
-                    "argb": -15253461,
+                    "argb": rgbToBin(RGB),
                     "hue": lien.hue,
                     "saturation": lien.saturation,
                     "value": e.target.value
                 }
-                ajaxPost(getLights + lien.id + '/color', newColor, function (reponse) {
+                ajaxPut(getLights + lien.id + '/color', newColor, function (reponse) {
                     const result = JSON.parse(reponse);
                     components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
+                    lien.value = result.value;
                     value.value = result.value;
+                    color.style.backgroundColor = rgbToHex(hsvToRgb(lien.hue, lien.saturation, lien.value));
                 }, true);
             };
 
             switchLight.onclick = function () {
                 lien.status = lien.status == "ON" ? "OFF" : "ON";
-                ajaxPost(getLights, lien, function (reponse) {
+                ajaxPut(getLights + lien.id + '/switch', lien, function (reponse) {
                     const result = JSON.parse(reponse);
                     switchLightPitcure.src = result.status == "ON" ? "media/light_bulb_on.png" : "media/light_bulb_off.png";
                 }, true);
@@ -290,10 +425,11 @@ function createRoom(lien) {
             //--------------------------------------------------------------------------
 
             idRoom.onclick = function () {
+                changeBorder(roomsButton);
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add light");
 
-                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'connected', 'status', 'delete'];
+                components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'color', 'value', 'connected', 'status', 'delete'];
                 components.gridData = [];
 
                 ajaxGet(getRooms + lien.id + '/lights', function (reponse) {
@@ -305,6 +441,7 @@ function createRoom(lien) {
             };
 
             idBuilding.onclick = function () {
+                changeBorder(buildingsButton);
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add building");
 
@@ -317,14 +454,30 @@ function createRoom(lien) {
             };
 
             idFloor.onclick = function () {
-                components.gridData = components.gridData.filter(el => el.floor === lien.floor)
+                changeBorder(roomsButton);
+                cleanElement(formAddItem);
+                modifyAddButton(true, "Add room");
+
+                components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
+                components.gridData = [];
+
+                ajaxGet(getRooms, function (reponse) {
+                    const reponseLien = JSON.parse(reponse);
+                    reponseLien.forEach(function (thisLien) {
+                        if (lien.floor === thisLien.floor) {
+                            createRoom(thisLien);
+                        }
+                    });
+                });
             };
 
             switchLight.onclick = function () {
                 lien.status = lien.status == "ON" ? "OFF" : "ON";
-                ajaxPost(getRooms + lien.id + "/switch", lien, function (reponse) {
+                ajaxPut(getRooms + lien.id + "/switch", lien, function (reponse) {
                     const result = JSON.parse(reponse);
-                    switchLightPitcure.src = result.status == "ON" ? "media/light_switch_on.png" : "media/light_switch_off.png";
+                    if (result[0]) {
+                        switchLightPitcure.src = result[0].status == "ON" ? "media/light_switch_on.png" : "media/light_switch_off.png";
+                    }
                 }, true);
             };
 
@@ -397,6 +550,7 @@ function createBuilding(lien) {
             //--------------------------------------------------------------------------
 
             idBuilding.onclick = function () {
+                changeBorder(buildingsButton);
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add room");
 
@@ -466,9 +620,9 @@ function addItem(type) {
         // Level
         const level = document.createElement("input");
         level.type = "range";
-        level.min = "0";
-        level.max = "255";
-        level.value = "0";
+        level.min = 0;
+        level.max = 255;
+        level.value = 0;
         level.required = true;
         level.style.width = "10em";
 
@@ -494,26 +648,19 @@ function addItem(type) {
 
                 isAddLightInitialized = !isAddLightInitialized;
 
-                createLight(JSON.parse(reponse));
+                ajaxPost(getLights, {
+                    level: level.value,
+                    status: status.value,
+                    roomId: parseInt(roomId.value)
+                }, function (reponse) {
 
-                function addLight(e) {
-                    e.preventDefault();
+                    createLight(JSON.parse(reponse));
 
-                    ajaxPost(getLights, {
-                        level: level.value,
-                        status: status.value,
-                        roomId: roomId.value
-                    }, function (reponse) {
+                    cleanElement(formAddItem);
+                    divFormAddItem.style.display = "none";
+                    modifyAddButton(true, type);
 
-                        createLight(JSON.parse(reponse));
-
-                        cleanElement(formAddItem);
-                        divFormAddItem.style.display = "none";
-                        modifyAddButton(true, type);
-
-                    }, true);
-
-                }
+                }, true);
             }
         }
 
@@ -556,26 +703,19 @@ function addItem(type) {
             if (!isAddRoomInitialized) {
 
                 isAddRoomInitialized = !isAddRoomInitialized;
+                ajaxPost(getRooms, {
+                    name: name.value,
+                    floor: floor.value,
+                    buildingId: buildingId.value
+                }, function (reponse) {
 
-                createRoom(JSON.parse(reponse));
+                    createRoom(JSON.parse(reponse));
 
-                function addRoom(e) {
-                    e.preventDefault();
+                    cleanElement(formAddItem);
+                    divFormAddItem.style.display = "none";
+                    modifyAddButton(true, type);
 
-                    ajaxPost(getRooms, {
-                        name: name.value,
-                        floor: floor.value,
-                        buildingId: buildingId.value
-                    }, function (reponse) {
-
-                        createRoom(JSON.parse(reponse));
-
-                        cleanElement(formAddItem);
-                        divFormAddItem.style.display = "none";
-                        modifyAddButton(true, type);
-
-                    }, true);
-                }
+                }, true);
             }
         }
 
@@ -597,25 +737,17 @@ function addItem(type) {
 
                 isAddBuildingInitialized = !isAddBuildingInitialized;
 
-                function addBuilding(e) {
+                ajaxPost(getBuildings, {
+                    name: name.value
+                }, function (reponse) {
 
                     createBuilding(JSON.parse(reponse));
-                    e.preventDefault();
 
-                    ajaxPost(getBuildings, {
-                        name: name.value
-                    }, function (reponse) {
+                    cleanElement(formAddItem);
+                    divFormAddItem.style.display = "none";
+                    modifyAddButton(true, type);
 
-                        createBuilding(JSON.parse(reponse));
-
-                        cleanElement(formAddItem);
-                        divFormAddItem.style.display = "none";
-                        modifyAddButton(true, type);
-
-                    }, true);
-
-                }
-
+                }, true);
             }
         }
     }
@@ -641,7 +773,7 @@ lightsButton.onclick = function () {
     cleanElement(formAddItem);
     modifyAddButton(true, "Add light");
 
-    components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'connected', 'status', 'delete'];
+    components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'color', 'connected', 'status', 'delete'];
     components.gridData = [];
 
     ajaxGet(getLights, function (reponse) {
@@ -759,3 +891,5 @@ ajaxGet(getRooms, function (reponse) {
 });
 
 roomsButton.style.color = "#000000";
+
+subscribe();
