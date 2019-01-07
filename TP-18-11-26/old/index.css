@@ -16,15 +16,6 @@
     }
 }
 
-@keyframes addItem {
-    from {
-        background-color: aqua;
-    }
-    to {
-        background-color: aquamarine;
-    }
-}
-
 html {
     font-size: 20px;
 }

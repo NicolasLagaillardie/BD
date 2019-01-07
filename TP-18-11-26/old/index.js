@@ -61,7 +61,7 @@ function createLight(lien) {
             level.value = lien.level;
             spanLevel.removeChild(spanLevel.firstChild);
             spanLevel.appendChild(level);
-            
+
             const outputLevel = document.getElementById("output_level_" + lien.id);
             outputLevel.style.display = "flex";
 
@@ -75,7 +75,7 @@ function createLight(lien) {
             hue.value = lien.hue;
             spanHue.removeChild(spanHue.firstChild);
             spanHue.appendChild(hue);
-            
+
             const outputHue = document.getElementById("output_hue_" + lien.id);
             outputHue.style.display = "flex";
 
@@ -89,7 +89,7 @@ function createLight(lien) {
             saturation.value = lien.saturation;
             spanSaturation.removeChild(spanSaturation.firstChild);
             spanSaturation.appendChild(saturation);
-            
+
             const outputSaturation = document.getElementById("output_saturation_" + lien.id);
             outputSaturation.style.display = "flex";
 
@@ -103,7 +103,7 @@ function createLight(lien) {
             value.value = lien.value;
             spanValue.removeChild(spanValue.firstChild);
             spanValue.appendChild(value);
-            
+
             const outputValue = document.getElementById("output_value_" + lien.id);
             outputValue.style.display = "flex";
 
@@ -163,24 +163,18 @@ function createLight(lien) {
                 });
             };
 
-            level.oninput = function(e){
+            level.oninput = function (e) {
                 outputLevel.innerHTML = e.target.value;
-            }
-
-            level.onchange = function (e) {
                 lien.level = e.target.value;
                 ajaxPost(getLights, lien, function (reponse) {
                     const result = JSON.parse(reponse);
                     components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
                     level.value = result.level;
                 }, true);
-            };
-
-            hue.oninput = function(e){
-                outputHue.innerHTML = e.target.value;
             }
-            
-            hue.onchange = function (e) {
+
+            hue.oninput = function (e) {
+                outputHue.innerHTML = e.target.value;
                 const newColor = {
                     "argb": -15253461,
                     "hue": e.target.value,
@@ -192,13 +186,10 @@ function createLight(lien) {
                     components.gridData = components.gridData.filter(el => el.id === lien.id ? result : el);
                     hue.value = result.hue;
                 }, true);
-            };
-
-            saturation.oninput = function(e){
-                outputSaturation.innerHTML = e.target.value;
             }
 
-            saturation.onchange = function (e) {
+            saturation.oninput = function (e) {
+                outputSaturation.innerHTML = e.target.value;
                 const newColor = {
                     "argb": -15253461,
                     "hue": lien.hue,
@@ -212,11 +203,8 @@ function createLight(lien) {
                 }, true);
             };
 
-            value.oninput = function(e){
+            value.oninput = function (e) {
                 outputValue.innerHTML = e.target.value;
-            }
-
-            value.onchange = function (e) {
                 const newColor = {
                     "argb": -15253461,
                     "hue": lien.hue,
@@ -585,8 +573,6 @@ function addItem(type) {
                         cleanElement(formAddItem);
                         divFormAddItem.style.display = "none";
                         modifyAddButton(true, type);
-
-                        //formAddItem.removeEventListener("submit", addRoom);
 
                     }, true);
                 }
