@@ -40,7 +40,7 @@ let isAddBuildingInitialized = false;
 const client = mqtt.connect("mqtt://192.168.12.1:9001");
 
 function subscribe() {
-    
+
     // subscribe to some topic
     client.on("connect", function () {
         client.subscribe("/connected", function (err) {
@@ -65,7 +65,7 @@ function subscribe() {
         }
 
     });
-    
+
 };
 
 //--------------------------------------------------------------------------
@@ -75,7 +75,7 @@ function subscribe() {
 function hsvToRgb(h, s, v) {
     // Wait for 3 positive floats
     // Returns a triplet of integers
-    
+
     let r, g, b;
 
     let i = Math.floor(h * 6);
@@ -477,7 +477,7 @@ function createRoom(lien) {
                 cleanElement(formAddItem);
                 modifyAddButton(true, "Add building");
 
-                components.gridColumns = ['id', 'name', 'status', 'delete'];
+                components.gridColumns = ['id', 'name', 'delete'];
                 components.gridData = [];
 
                 ajaxGet(getBuildings + lien.buildingId, function (reponse) {
@@ -533,7 +533,6 @@ function createBuilding(lien) {
     components.gridData.push({
         id: lien.id,
         name: lien.name,
-        status: "status_" + lien.id,
         delete: "delete_" + lien.id
     });
 
@@ -546,15 +545,6 @@ function createBuilding(lien) {
 
             // Name
             const idName = document.getElementById("button_name_" + lien.id);
-
-            // Switch light
-            //button
-            const switchLight = document.getElementById("button_status_" + lien.id);
-
-            //CSS
-            switchLight.removeChild(switchLight.lastChild);
-            const switchLightPitcure = document.getElementById("img_status_" + lien.id);
-            switchLightPitcure.style.display = "flex";
 
             // Delete building
             const deleteBuilding = document.getElementById("button_delete_" + lien.id);
@@ -616,7 +606,7 @@ function createBuilding(lien) {
 function modifyAddButton(show, type) {
     // Wait for a boolean and a string among ["Add light", "Add room", "Add building"]
     // Add the correct form and display it
-    
+
     divAddButton.style.display = show ? "block" : "none";
     addButton.onclick = function () {
         divFormAddItem.style.display = "block";
@@ -964,7 +954,7 @@ function init() {
             cleanElement(formAddItem);
             modifyAddButton(true, "Add building");
 
-            components.gridColumns = ['id', 'name', 'status', 'delete'];
+            components.gridColumns = ['id', 'name', 'delete'];
             components.gridData = [];
 
             ajaxGet(getBuildings, function (reponse) {
