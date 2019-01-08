@@ -1,5 +1,3 @@
-import Tree from 'vuejs-tree'
-
 //--------------------------------------------------------------------------
 // URL
 //-------------------------------------------------------------------------- 
@@ -466,7 +464,7 @@ function createRoom(lien) {
                 ajaxGet(getRooms, function (reponse) {
                     const reponseLien = JSON.parse(reponse);
                     reponseLien.forEach(function (thisLien) {
-                        if (lien.floor === thisLien.floor) {
+                        if (lien.floor === thisLien.floor && lien.buildingId === thisLien.buildingId) {
                             createRoom(thisLien);
                         }
                     });
@@ -772,8 +770,8 @@ function changeBorder(elt) {
     lastButton.onmouseout = function () {
         this.style.color = "#ffffff";
     }
-    elt.style.color = "#000000";
     lastButton = elt;
+    elt.style.color = "#000000";
 }
 
 lightsButton.onclick = function () {
@@ -807,6 +805,7 @@ roomsButton.onclick = function () {
         });
     });
 };
+
 
 buildingsButton.onclick = function () {
     changeBorder(buildingsButton);
@@ -898,29 +897,5 @@ ajaxGet(getRooms, function (reponse) {
 });
 
 roomsButton.style.color = "#000000";
-
-
-
-
-
-// in your vue instance
-const menu = new Vue({
-    components: {
-        'tree': Tree
-    },
-    methods: {
-        getTree: function (treeId) {
-            for (let i = 0; i < this.$children.length; i++) {
-                if (this.$children[i].$props.id == treeId) return this.$children[i]
-            }
-        }
-    }
-})
-
-
-
-
-
-
 
 subscribe();

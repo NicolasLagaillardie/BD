@@ -6,7 +6,6 @@
     <link rel="icon" type="image/png" href="/media/logo.png">
     <script src="vue.js"></script>
     <script src="mqtt.min.js"></script>
-    <script src="vuejs-tree.js"></script>
 </head>
 
 <body>
@@ -45,49 +44,37 @@
             </form>
         </div>
 
-        <div id="bodyContent" class="divBodyContent">
-
-            <div id="menuTree" class="menuTree">
-
-                <Tree id="my-tree-id" :custom-options="myCustomOptions" :custom-styles="myCustomStyles" :nodes="treeDisplayData"></Tree>
-
-            </div>
-
-            <br style="clear:both;" />
-
-            <!-- component template -->
-            <script type="text/x-template" id="components-grid-template">
-                <table>
-                    <thead>
-                        <tr>
-                            <th v-for="key in columns" :class="{ active: sortKey == key }">
-                                {{ key | capitalize }}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="entry in filteredData">
-                            <td v-for="key in columns">
-                                <span v-bind:id="'span_' + key + '_' + entry[columns[0]]">
+        <!-- component template -->
+        <script type="text/x-template" id="components-grid-template">
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="key in columns" :class="{ active: sortKey == key }">
+                            {{ key | capitalize }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="entry in filteredData">
+                        <td v-for="key in columns">
+                            <span v-bind:id="'span_' + key + '_' + entry[columns[0]]">
                                 <button v-bind:id="'button_' + key + '_'  + entry[columns[0]]">
                                     <img v-bind:id="'img_' + key + '_'  + entry[columns[0]]" style="display: none;">
                                     <span>
                                         {{entry[key]}}
                                     </span>
-                                </button>
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </script>
+                            </button>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </script>
 
-            <!-- demo root element -->
-            <div id="components" class="idTable">
-                <components-grid :data="gridData" :columns="gridColumns" :filter-key="searchQuery">
-                </components-grid>
-            </div>
-
+        <!-- demo root element -->
+        <div id="components" class="idTable">
+            <components-grid :data="gridData" :columns="gridColumns" :filter-key="searchQuery">
+            </components-grid>
         </div>
 
     </center>
