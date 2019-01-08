@@ -57,7 +57,17 @@ header {
     margin-right: 1em;
 }
 
+.menuTree {
+    float: left;
+    height: 100%;
+    width: auto;
+}
+
 .addButton {
+    display: flex;
+}
+
+.divBodyContent {
     display: flex;
 }
 
@@ -68,7 +78,6 @@ header {
     cursor: pointer;
     outline: none;
     overflow: hidden;
-    margin: 5px;
 }
 
 img {
@@ -184,6 +193,7 @@ td {
 
 .divTable {
     overflow-x: auto;
+    float: right;
 }
 
 table {
@@ -215,7 +225,7 @@ td {
 }
 
 output {
-    
+
     text-align: center;
     justify-content: center;
     align-content: center;
