@@ -20,10 +20,8 @@
             </h1>
         </div>
         <br style="clear:both;" />
-        <div class="divButtonHeader">
-            <button id="lightsButton" class="buttonHeader">Lights</button>
-            <button id="roomsButton" class="buttonHeader">Rooms</button>
-            <button id="buildingsButton" class="buttonHeader">Buildings</button>
+        <div class="divButtonHeader" id="divButtonHeaderVue">
+            <menu-item v-for="item in menuItems" v-bind:item="item" v-bind:key="item.id" v-bind:id="item.id"></menu-item>
         </div>
     </header>
 

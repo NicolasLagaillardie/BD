@@ -68,6 +68,7 @@ header {
     cursor: pointer;
     outline: none;
     overflow: hidden;
+    margin: 5px;
 }
 
 img {

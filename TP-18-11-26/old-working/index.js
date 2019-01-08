@@ -11,19 +11,23 @@ const getBuildings = serverURL + "buildings/";
 // DOM elements
 //--------------------------------------------------------------------------  
 
-const tableau = document.getElementById("tableau");
-const lightsButton = document.getElementById("lightsButton");
-const roomsButton = document.getElementById("roomsButton");
-const buildingsButton = document.getElementById("buildingsButton");
+let lightsButton;
+let roomsButton;
+let buildingsButton;
 const addButton = document.getElementById("addButton");
 const divAddButton = document.getElementById("divAddButton");
 const formAddItem = document.getElementById("formAddItem");
 const divFormAddItem = document.getElementById("divFormAddItem");
 
-let lastButton = roomsButton;
 const tableLights = document.getElementById("lights");
 const tableRooms = document.getElementById("rooms");
 const tableBuildings = document.getElementById("buildings");
+
+let lastButton;
+
+let isAddLightInitialized = false;
+let isAddRoomInitialized = false;
+let isAddBuildingInitialized = false;
 
 //--------------------------------------------------------------------------
 // MQTT
@@ -32,6 +36,7 @@ const tableBuildings = document.getElementById("buildings");
 const client = mqtt.connect("mqtt://192.168.12.1:9001");
 
 function subscribe() {
+    
     // subscribe to some topic
     client.on("connect", function () {
         client.subscribe("/connected", function (err) {
@@ -56,22 +61,24 @@ function subscribe() {
         }
 
     });
-
-    return;
+    
 };
 
 //--------------------------------------------------------------------------
-// DOM actions
+// Functions to convert from a base to another
 //--------------------------------------------------------------------------   
 
 function hsvToRgb(h, s, v) {
-    var r, g, b;
+    // Wait for 3 positive floats
+    // Returns a triplet of integers
+    
+    let r, g, b;
 
-    var i = Math.floor(h * 6);
-    var f = h * 6 - i;
-    var p = v * (1 - s);
-    var q = v * (1 - f * s);
-    var t = v * (1 - (1 - f) * s);
+    let i = Math.floor(h * 6);
+    let f = h * 6 - i;
+    let p = v * (1 - s);
+    let q = v * (1 - f * s);
+    let t = v * (1 - (1 - f) * s);
 
     switch (i % 6) {
         case 0:
@@ -102,20 +109,27 @@ function hsvToRgb(h, s, v) {
 }
 
 function rgbToBin(RGB) {
+    // Wait for a triplet of integers
+    // Return a binary
     return parseInt("111111" + RGB[0].toString(2) + RGB[1].toString(2) + RGB[2].toString(2), 2);
 }
 
 function componentToHex(c) {
-    var hex = c.toString(16);
+    // Wait for an integerm return a hexadecimal
+    let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(RGB) {
+    // Wait for a triplet of integers
+    // Return a hex
     return "#" + componentToHex(RGB[0]) + componentToHex(RGB[1]) + componentToHex(RGB[2]);
 }
 
 function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    // Wait for a hex
+    // Return a JSON parsed
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
@@ -124,17 +138,23 @@ function hexToRgb(hex) {
 }
 
 function hex2bin(hex) {
+    // Wait for a hex
+    // Return a binary
     return (parseInt(hex, 16).toString(10));
 }
 
 function rgbToHsv(r, g, b) {
+    // Wait for 3 integers
+    // Return a tr
+    // Wait for a triplet of integers
+    // Return a hexiplet
     r /= 255, g /= 255, b /= 255;
 
-    var max = Math.max(r, g, b),
+    let max = Math.max(r, g, b),
         min = Math.min(r, g, b);
-    var h, s, v = max;
+    let h, s, v = max;
 
-    var d = max - min;
+    let d = max - min;
     s = max == 0 ? 0 : d / max;
 
     if (max == min) {
@@ -158,7 +178,13 @@ function rgbToHsv(r, g, b) {
     return [h, s, v];
 }
 
+//--------------------------------------------------------------------------
+// DOM actions
+//--------------------------------------------------------------------------
+
 function createLight(lien) {
+    // Wait for a JSON object
+    // Add a new line for a light
 
     components.gridData.push({
         id: lien.id,
@@ -376,6 +402,8 @@ function createLight(lien) {
 }
 
 function createRoom(lien) {
+    // Wait for a JSON object
+    // Add a new line for a room
 
     components.gridData.push({
         id: lien.id,
@@ -495,6 +523,8 @@ function createRoom(lien) {
 }
 
 function createBuilding(lien) {
+    // Wait for a JSON object
+    // Add a new line for a building
 
     components.gridData.push({
         id: lien.id,
@@ -531,7 +561,7 @@ function createBuilding(lien) {
             deleteBuildingPicture.src = "media/delete.png";
 
             //Check if all the lights are on
-            var isLightOn = false;
+            let isLightOn = false;
             switchLightPitcure.src = "media/light_switch_off.png";
 
             ajaxGet(getBuildings + lien.id + '/rooms', function (reponse) {
@@ -580,7 +610,9 @@ function createBuilding(lien) {
 }
 
 function modifyAddButton(show, type) {
-    //addButton.innerHTML = type;
+    // Wait for a boolean and a string among ["Add light", "Add room", "Add building"]
+    // Add the correct form and display it
+    
     divAddButton.style.display = show ? "block" : "none";
     addButton.onclick = function () {
         divFormAddItem.style.display = "block";
@@ -593,11 +625,9 @@ function modifyAddButton(show, type) {
     };
 }
 
-var isAddLightInitialized = false;
-var isAddRoomInitialized = false;
-var isAddBuildingInitialized = false;
-
 function addItem(type) {
+    // Wait for a string
+    // Create a form according to the type sent : "Add light", "Add room", "Add building"
 
     divAddButton.style.display = "none";
 
@@ -607,7 +637,7 @@ function addItem(type) {
 
         ajaxGet(getRooms, function (reponse) {
             const reponseLien = JSON.parse(reponse);
-            var index = 0;
+            let index = 0;
             reponseLien.forEach(function (lien) {
                 const option = document.createElement("option");
                 option.value = lien.id;
@@ -680,7 +710,7 @@ function addItem(type) {
 
         ajaxGet(getBuildings, function (reponse) {
             const reponseLien = JSON.parse(reponse);
-            var index = 0;
+            let index = 0;
             reponseLien.forEach(function (lien) {
                 const option = document.createElement("option");
                 option.value = lien.id;
@@ -755,6 +785,8 @@ function addItem(type) {
 }
 
 function cleanElement(element) {
+    // Wait for a DOM elements
+    // Remove all children
     if (element) {
         while (element.firstChild) {
             element.removeChild(element.firstChild);
@@ -763,67 +795,27 @@ function cleanElement(element) {
 }
 
 function changeBorder(elt) {
-    lastButton.style.color = "#ffffff";
-    lastButton.onmouseover = function () {
-        this.style.color = "#000000";
+    // Wait for a DOM elements
+    // Change its color to black
+    if (lastButton != elt) {
+        elt.style.color = "#000000";
+        elt.onmouseover = function () {}
+        elt.onmouseout = function () {}
+        lastButton.style.color = "#ffffff";
+        lastButton.onmouseover = function () {
+            this.style.color = "#000000";
+        }
+        lastButton.onmouseout = function () {
+            this.style.color = "#ffffff";
+        }
+        lastButton = elt;
     }
-    lastButton.onmouseout = function () {
-        this.style.color = "#ffffff";
-    }
-    lastButton = elt;
-    elt.style.color = "#000000";
 }
 
-lightsButton.onclick = function () {
-    changeBorder(lightsButton);
-    cleanElement(formAddItem);
-    modifyAddButton(true, "Add light");
+//--------------------------------------------------------------------------
+// Grid template
+//--------------------------------------------------------------------------
 
-    components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'color', 'connected', 'status', 'delete'];
-    components.gridData = [];
-
-    ajaxGet(getLights, function (reponse) {
-        const reponseLien = JSON.parse(reponse);
-        reponseLien.forEach(function (lien) {
-            createLight(lien);
-        });
-    });
-};
-
-roomsButton.onclick = function () {
-    changeBorder(roomsButton);
-    cleanElement(formAddItem);
-    modifyAddButton(true, "Add room");
-
-    components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
-    components.gridData = [];
-
-    ajaxGet(getRooms, function (reponse) {
-        const reponseLien = JSON.parse(reponse);
-        reponseLien.forEach(function (lien) {
-            createRoom(lien);
-        });
-    });
-};
-
-
-buildingsButton.onclick = function () {
-    changeBorder(buildingsButton);
-    cleanElement(formAddItem);
-    modifyAddButton(true, "Add building");
-
-    components.gridColumns = ['id', 'name', 'status', 'delete'];
-    components.gridData = [];
-
-    ajaxGet(getBuildings, function (reponse) {
-        const reponseLien = JSON.parse(reponse);
-        reponseLien.forEach(function (lien) {
-            createBuilding(lien);
-        });
-    });
-};
-
-// register the grid component
 Vue.component('components-grid', {
     template: '#components-grid-template',
     props: {
@@ -832,7 +824,7 @@ Vue.component('components-grid', {
         filterKey: String
     },
     data: function () {
-        var sortOrders = {}
+        let sortOrders = {}
         this.columns.forEach(function (key) {
             sortOrders[key] = 1
         })
@@ -843,10 +835,10 @@ Vue.component('components-grid', {
     },
     computed: {
         filteredData: function () {
-            var sortKey = this.sortKey
-            var filterKey = this.filterKey && this.filterKey.toLowerCase()
-            var order = this.sortOrders[sortKey] || 1
-            var data = this.data
+            let sortKey = this.sortKey
+            let filterKey = this.filterKey && this.filterKey.toLowerCase()
+            let order = this.sortOrders[sortKey] || 1
+            let data = this.data
             if (filterKey) {
                 data = data.filter(function (row) {
                     return Object.keys(row).some(function (key) {
@@ -883,19 +875,129 @@ const components = new Vue({
     }
 });
 
-cleanElement(formAddItem);
-modifyAddButton(true, "Add room");
+//--------------------------------------------------------------------------
+// Menu template
+//--------------------------------------------------------------------------
 
-components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
-components.gridData = [];
+const stringButton = "ButtonVue";
 
-ajaxGet(getRooms, function (reponse) {
-    const reponseLien = JSON.parse(reponse);
-    reponseLien.forEach(function (lien) {
-        createRoom(lien);
-    });
-});
+Vue.component('menu-item', {
+    props: ['item'],
+    template: '<button class="buttonHeader">{{item.text}}</button>'
+})
 
-roomsButton.style.color = "#000000";
+let menu = new Vue({
+    el: '#divButtonHeaderVue',
+    data: {
+        menuItems: [
+            {
+                id: 'light' + stringButton,
+                text: 'Lights'
+            },
+            {
+                id: 'room' + stringButton,
+                text: 'Rooms'
+            },
+            {
+                id: 'building' + stringButton,
+                text: 'Buildings'
+            }
+    ]
+    }
+})
 
-subscribe();
+//--------------------------------------------------------------------------
+// Initialisation
+//--------------------------------------------------------------------------
+
+function init() {
+    // initialisation function
+    // run until the buttons are available
+
+    lightsButton = document.getElementById("lightButtonVue");
+    roomsButton = document.getElementById("roomButtonVue");
+    buildingsButton = document.getElementById("buildingButtonVue");
+
+    if (lightsButton && roomsButton && buildingsButton) {
+
+        // react to the lights button
+        lightsButton.onclick = function () {
+            changeBorder(lightsButton);
+            cleanElement(formAddItem);
+            modifyAddButton(true, "Add light");
+
+            components.gridColumns = ['id', 'roomId', 'level', 'hue', 'saturation', 'value', 'color', 'connected', 'status', 'delete'];
+            components.gridData = [];
+
+            ajaxGet(getLights, function (reponse) {
+                const reponseLien = JSON.parse(reponse);
+                reponseLien.forEach(function (lien) {
+                    createLight(lien);
+                });
+            });
+        };
+
+        // react to the rooms button
+        roomsButton.onclick = function () {
+            changeBorder(roomsButton);
+            cleanElement(formAddItem);
+            modifyAddButton(true, "Add room");
+
+            components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
+            components.gridData = [];
+
+            ajaxGet(getRooms, function (reponse) {
+                const reponseLien = JSON.parse(reponse);
+                reponseLien.forEach(function (lien) {
+                    createRoom(lien);
+                });
+            });
+        };
+
+        // react to the building button
+        buildingsButton.onclick = function () {
+            changeBorder(buildingsButton);
+            cleanElement(formAddItem);
+            modifyAddButton(true, "Add building");
+
+            components.gridColumns = ['id', 'name', 'status', 'delete'];
+            components.gridData = [];
+
+            ajaxGet(getBuildings, function (reponse) {
+                const reponseLien = JSON.parse(reponse);
+                reponseLien.forEach(function (lien) {
+                    createBuilding(lien);
+                });
+            });
+        };
+
+        //--------------------------------------------------------------------------
+        // Set the initial grid to the rooms one
+        //--------------------------------------------------------------------------
+
+        cleanElement(formAddItem);
+        modifyAddButton(true, "Add room");
+
+        components.gridColumns = ['id', 'name', 'floor', 'buildingId', 'status', 'delete'];
+        components.gridData = [];
+
+        ajaxGet(getRooms, function (reponse) {
+            const reponseLien = JSON.parse(reponse);
+            reponseLien.forEach(function (lien) {
+                createRoom(lien);
+            });
+        });
+
+        roomsButton.style.color = "#000000";
+
+        lastButton = roomsButton;
+
+        subscribe();
+
+    } else {
+        setTimeout(init, 100);
+    }
+
+}
+
+init();
